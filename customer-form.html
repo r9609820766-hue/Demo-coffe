@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 30px;
+            padding: 40px 35px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header .icon {
+            font-size: 3.5rem;
+            color: #6f4e37;
+            margin-bottom: 10px;
+        }
+
+        .form-header h2 {
+            color: #2c1810;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .form-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: #6f4e37;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e8e0d8;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6f4e37;
+            box-shadow: 0 0 0 3px rgba(111,78,55,0.1);
+        }
+
+        .form-group input[readonly] {
+            background: #f5f0eb;
+            cursor: not-allowed;
+            color: #6f4e37;
+            font-weight: 500;
+        }
+
+        .table-preview {
+            background: linear-gradient(135deg, #6f4e37, #8b5e3c);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .table-preview i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .table-preview span {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #6f4e37;
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #5a3e2e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(111,78,55,0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #6f4e37;
+        }
+
+        .error-msg {
+            color: #f44336;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">
+        <div class="icon">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <h2>Complete Your Details</h2>
+        <p>Please verify your information to continue ordering</p>
+    </div>
+
+    <!-- Table Preview Card -->
+    <div class="table-preview">
+        <i class="fas fa-qrcode"></i>
+        <span id="tableDisplay">Loading...</span>
+    </div>
+
+    <form id="customerForm">
+        <div class="form-group">
+            <label><i class="fas fa-user"></i> Full Name *</label>
+            <input type="text" id="customerName" placeholder="Enter your full name" autocomplete="off">
+            <div class="error-msg" id="nameError">Please enter your name</div>
+        </div>
+
+        <div class="form-group">
+            <label><i class="fas fa-phone-alt"></i> Mobile Number *</label>
+            <input type="tel" id="mobileNumber" placeholder="Enter 10 digit mobile number" maxlength="10" autocomplete="off">
+            <div class="error-msg" id="mobileError">Please enter a valid 10 digit mobile number</div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+            <i class="fas fa-arrow-right"></i> Continue to Menu
+        </button>
+    </form>
+
+    <a href="index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+</div>
+
+<script>
+    // ============ টেবিল নম্বর পাওয়ার ফাংশন ============
+    // 3 উপায়ে টেবিল নম্বর পাওয়া যাবে:
+    // 1. URL প্যারামিটার থেকে (?table=T01)
+    // 2. localStorage থেকে (scannedTable)
+    // 3. ডিফল্ট (সরাসরি এই পেজে এলে)
+    
+    function getTableNumber() {
+        // পদ্ধতি 1: URL প্যারামিটার চেক করুন
+        const urlParams = new URLSearchParams(window.location.search);
+        let tableFromUrl = urlParams.get('table');
+        
+        if (tableFromUrl && tableFromUrl.trim() !== "") {
+            console.log("✅ Table from URL:", tableFromUrl);
+            localStorage.setItem("scannedTable", tableFromUrl);
+            return tableFromUrl;
+        }
+        
+        // পদ্ধতি 2: localStorage চেক করুন
+        let tableFromStorage = localStorage.getItem("scannedTable");
+        if (tableFromStorage && tableFromStorage.trim() !== "" && tableFromStorage !== "null" && tableFromStorage !== "undefined") {
+            console.log("✅ Table from localStorage:", tableFromStorage);
+            return tableFromStorage;
+        }
+        
+        // পদ্ধতি 3: ডিফল্ট (সরাসরি এই পেজে এলে)
+        console.log("⚠️ No table found, using default");
+        return "T01";  // ডিফল্ট টেবিল নম্বর
+    }
+    
+    // টেবিল নম্বর সেট করা
+    let scannedTable = getTableNumber();
+    const tableDisplay = document.getElementById("tableDisplay");
+    const tableInput = document.getElementById("tableNumber");
+    
+    // ডিসপ্লে আপডেট করা
+    if (tableDisplay) {
+        tableDisplay.innerHTML = `<i class="fas fa-chair"></i> ${scannedTable}`;
+    }
+    
+    // কনসোলে লগ করে দেখুন কোন টেবিল এসেছে (ডিবাগিং এর জন্য)
+    console.log("Final Table Number:", scannedTable);
+    
+    // ফর্ম সাবমিট হ্যান্ডলার
+    document.getElementById("customerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById("customerName").value.trim();
+        const mobile = document.getElementById("mobileNumber").value.trim();
+        
+        let isValid = true;
+        
+        // নাম ভ্যালিডেশন
+        if (name === "") {
+            document.getElementById("nameError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("nameError").style.display = "none";
+        }
+        
+        // মোবাইল ভ্যালিডেশন
+        const mobileRegex = /^[0-9]{10}$/;
+        if (mobile === "" || !mobileRegex.test(mobile)) {
+            document.getElementById("mobileError").style.display = "block";
+            isValid = false;
+        } else {
+            document.getElementById("mobileError").style.display = "none";
+        }
+        
+        if (isValid) {
+            // কাস্টমারের তথ্য লোকালস্টোরেজে সেভ করা
+            const customerInfo = {
+                name: name,
+                mobile: mobile,
+                tableNo: scannedTable,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem("customerInfo", JSON.stringify(customerInfo));
+            
+            console.log("Customer Info Saved:", customerInfo);
+            
+            // মেনু পেজে রিডাইরেক্ট
+            window.location.href = "menu-customer.html";
+        }
+    });
+    
+    // মোবাইল নাম্বারে শুধু সংখ্যা
+    document.getElementById("mobileNumber").addEventListener("input", function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+</script>
+
+</body>
+</html>

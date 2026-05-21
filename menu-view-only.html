@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Full Menu - CUP Coffee (View Only)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fefaf5;
+            color: #2c1810;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #6f4e37;
+        }
+
+        .logo span {
+            color: #d4a373;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2c1810;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6f4e37;
+        }
+
+        .menu-icon, .mobile-menu {
+            display: none;
+        }
+
+        .menu-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 5%;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .menu-header h1 {
+            font-size: 2.5rem;
+            color: #2c1810;
+        }
+
+        .menu-header p {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .readonly-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+            position: sticky;
+            top: 80px;
+            background: #fefaf5;
+            padding: 15px 0;
+            z-index: 99;
+        }
+
+        .cat-btn {
+            background: white;
+            border: 2px solid #e0d6cf;
+            padding: 12px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .cat-btn:hover {
+            border-color: #6f4e37;
+        }
+
+        .cat-btn.active {
+            background: #6f4e37;
+            color: white;
+            border-color: #6f4e37;
+        }
+
+        .category-section {
+            margin-bottom: 50px;
+            scroll-margin-top: 120px;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            color: #6f4e37;
+            margin-bottom: 25px;
+            padding-left: 15px;
+            border-left: 5px solid #6f4e37;
+        }
+
+        .subcategory-section {
+            margin-bottom: 35px;
+        }
+
+        .subcategory-title {
+            font-size: 1.3rem;
+            color: #8b5e3c;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 3px solid #d4a373;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .menu-item-info {
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .menu-item-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #2c1810;
+        }
+
+        .price {
+            color: #6f4e37;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .view-only-badge {
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: #ff9800;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #6f4e37;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 30px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5a3e2e;
+        }
+
+        .footer {
+            background: #1a0f0a;
+            color: rgba(255,255,255,0.7);
+            padding: 3rem 5%;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .mgmt-login-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c1810;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .mgmt-login-btn:hover {
+            transform: scale(1.1);
+            background: #6f4e37;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .menu-icon {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+            .mobile-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 2rem;
+                flex-direction: column;
+                gap: 1rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                z-index: 999;
+                display: none;
+            }
+            .mobile-menu.show {
+                display: flex;
+            }
+            .category-title {
+                font-size: 1.5rem;
+            }
+            .category-tabs {
+                top: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">CUP <span>Coffee</span></div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#menu">Today's Special</a>
+        <a href="track-order.html">Track Order</a>
+        <a href="my-bookings.html">My Bookings</a>
+    </div>
+    <div class="menu-icon" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html" onclick="closeMenu()">Home</a>
+    <a href="index.html#menu" onclick="closeMenu()">Today's Special</a>
+    <a href="track-order.html" onclick="closeMenu()">Track Order</a>
+    <a href="my-bookings.html" onclick="closeMenu()">My Bookings</a>
+</div>
+
+<div class="menu-container">
+    <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    
+    <div class="menu-header">
+        <h1>Our Full Menu <span class="readonly-badge"><i class="fas fa-eye"></i> View Only</span></h1>
+        <p>Explore our delicious food & beverages collection</p>
+    </div>
+
+    <div class="category-tabs" id="categoryTabs"></div>
+    <div id="menuContent"></div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 CUP Coffee - Premium Coffee Shop. All rights reserved.</p>
+    <p style="margin-top: 10px;">📍 123 Coffee Street, Food City | 📞 +91 98765 43210</p>
+</footer>
+
+<a href="admin-login.html" class="mgmt-login-btn" title="Management Login">
+    <i class="fas fa-user-shield"></i>
+</a>
+
+<script>
+    let fullMenuData = {};
+
+    // Default fallback menu (যদি localStorage এ কিছু না থাকে)
+    const defaultFullMenu = {
+        Breakfast: {
+            Chicken: [
+                { name: "Chicken Sausage with Egg", price: 220, img: "https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?w=300&h=200&fit=crop" },
+                { name: "Chicken Omelette", price: 150, img: "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Egg: [
+                { name: "Egg Masala Omelette", price: 120, img: "https://images.pexels.com/photos/296188/pexels-photo-296188.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Veg: [
+                { name: "Aloo Paratha with Curd", price: 100, img: "https://images.pexels.com/photos/2089718/pexels-photo-2089718.jpeg?w=300&h=200&fit=crop" }
+            ]
+        },
+        Snacks: {
+            Chicken: [
+                { name: "Chicken Popcorn", price: 120, img: "https://images.pexels.com/photos/27414590/pexels-photo-27414590.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Paneer: [
+                { name: "Paneer Tikka", price: 190, img: "https://images.pexels.com/photos/9562293/pexels-photo-9562293.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Veg: [
+                { name: "Samosa", price: 40, img: "https://images.pexels.com/photos/6287550/pexels-photo-6287550.jpeg?w=300&h=200&fit=crop" }
+            ]
+        },
+        Lunch: {
+            Chicken: [
+                { name: "Chicken Biryani", price: 220, img: "https://images.pexels.com/photos/718742/pexels-photo-718742.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Paneer: [
+                { name: "Paneer Butter Masala", price: 200, img: "https://images.pexels.com/photos/1438672/pexels-photo-1438672.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Veg: [
+                { name: "Veg Thali", price: 150, img: "https://images.pexels.com/photos/8501264/pexels-photo-8501264.jpeg?w=300&h=200&fit=crop" }
+            ]
+        },
+        Beverages: {
+            "Tea/Coffee": [
+                { name: "Cappuccino", price: 120, img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=200&fit=crop" }
+            ],
+            Shakes: [
+                { name: "Chocolate Shake", price: 120, img: "https://images.pexels.com/photos/1351238/pexels-photo-1351238.jpeg?w=300&h=200&fit=crop" }
+            ]
+        }
+    };
+
+    // localStorage থেকে মেনু লোড করুন
+    function loadMenuData() {
+        const savedMenu = localStorage.getItem("fullMenuData");
+        if (savedMenu && savedMenu !== "undefined" && savedMenu !== "null") {
+            try {
+                const parsed = JSON.parse(savedMenu);
+                if (parsed && Object.keys(parsed).length > 0) {
+                    fullMenuData = parsed;
+                    console.log("✅ Menu loaded from localStorage");
+                    return;
+                }
+            } catch(e) {
+                console.error("Error parsing menu:", e);
+            }
+        }
+        // যদি localStorage এ না থাকে বা খালি থাকে, তাহলে ডিফল্ট মেনু সেট করুন
+        fullMenuData = JSON.parse(JSON.stringify(defaultFullMenu));
+        localStorage.setItem("fullMenuData", JSON.stringify(fullMenuData));
+        console.log("✅ Using default menu");
+    }
+
+    // সব ক্যাটাগরি নাম পাওয়া
+    function getCategories() {
+        return Object.keys(fullMenuData);
+    }
+
+    // ক্যাটাগরি ট্যাব রেন্ডার করুন
+    function renderCategoryTabs() {
+        const categories = getCategories();
+        const container = document.getElementById("categoryTabs");
+        if (!container) return;
+        container.innerHTML = "";
+        
+        categories.forEach((cat, index) => {
+            const btn = document.createElement("button");
+            btn.className = "cat-btn";
+            if (index === 0) btn.classList.add("active");
+            btn.innerText = cat;
+            btn.onclick = () => {
+                document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                scrollToCategory(cat);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // নির্দিষ্ট ক্যাটাগরিতে স্ক্রল করুন
+    function scrollToCategory(categoryName) {
+        const element = document.getElementById(`cat-${categoryName.replace(/\s/g, '')}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // সম্পূর্ণ মেনু রেন্ডার করুন
+    function renderMenu() {
+        const container = document.getElementById("menuContent");
+        if (!container) return;
+        container.innerHTML = "";
+        
+        const categories = getCategories();
+        
+        if (categories.length === 0) {
+            container.innerHTML = '<div class="loading"><i class="fas fa-utensils"></i><p>No menu items found</p></div>';
+            return;
+        }
+        
+        categories.forEach(category => {
+            const subcategories = fullMenuData[category];
+            if (!subcategories) return;
+            
+            const categoryId = `cat-${category.replace(/\s/g, '')}`;
+            
+            const categoryDiv = document.createElement("div");
+            categoryDiv.className = "category-section";
+            categoryDiv.id = categoryId;
+            categoryDiv.innerHTML = `<h2 class="category-title">${category}</h2>`;
+            
+            for (const [subcat, items] of Object.entries(subcategories)) {
+                if (!items || items.length === 0) continue;
+                
+                const subcatDiv = document.createElement("div");
+                subcatDiv.className = "subcategory-section";
+                subcatDiv.innerHTML = `<h3 class="subcategory-title">${subcat}</h3><div class="menu-grid" id="grid-${category.replace(/\s/g, '')}-${subcat.replace(/\s/g, '')}"></div>`;
+                categoryDiv.appendChild(subcatDiv);
+                
+                const grid = subcatDiv.querySelector(".menu-grid");
+                items.forEach(item => {
+                    const card = document.createElement("div");
+                    card.className = "menu-item";
+                    card.innerHTML = `
+                        <img src="${item.img || 'https://via.placeholder.com/300x200?text=Food+Image'}" alt="${item.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Food+Image'">
+                        <div class="menu-item-info">
+                            <div class="view-only-badge"><i class="fas fa-eye"></i> View Only</div>
+                            <h4>${escapeHtml(item.name)}</h4>
+                            <div class="price">₹${item.price}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+            
+            if (categoryDiv.children.length > 1) {
+                container.appendChild(categoryDiv);
+            }
+        });
+    }
+
+    // HTML এস্কেপ ফাংশন (XSS প্রতিরোধ)
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // মোবাইল মেনু ফাংশন
+    function toggleMobileMenu() {
+        document.getElementById('mobileMenu').classList.toggle('show');
+    }
+    
+    function closeMenu() {
+        document.getElementById('mobileMenu').classList.remove('show');
+    }
+
+    // লোকালস্টোরেজ পরিবর্তন ট্র্যাক করুন (অ্যাডমিন প্যানেল থেকে পরিবর্তন হলে অটো আপডেট)
+    let lastMenuData = null;
+
+    function checkForUpdates() {
+        const currentMenu = localStorage.getItem("fullMenuData");
+        if (currentMenu !== lastMenuData) {
+            lastMenuData = currentMenu;
+            loadMenuData();
+            renderCategoryTabs();
+            renderMenu();
+            console.log("🔄 Menu updated from admin panel");
+        }
+        setTimeout(checkForUpdates, 2000); // প্রতি 2 সেকেন্ডে চেক করুন
+    }
+
+    // পেজ লোড হলে
+    loadMenuData();
+    renderCategoryTabs();
+    renderMenu();
+    
+    // অটো-আপডেট শুরু করুন
+    lastMenuData = localStorage.getItem("fullMenuData");
+    setTimeout(checkForUpdates, 3000);
+</script>
+</body>
+</html>

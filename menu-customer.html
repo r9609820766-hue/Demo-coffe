@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Menu - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fefaf5;
+            color: #2c1810;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6f4e37;
+        }
+
+        .customer-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .table-badge {
+            background: #6f4e37;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+
+        .cart-link {
+            background: #ff9800;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-count {
+            background: white;
+            color: #ff9800;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Menu Container */
+        .menu-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 5%;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .cat-btn {
+            background: white;
+            border: 2px solid #e0d6cf;
+            padding: 12px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .cat-btn.active {
+            background: #6f4e37;
+            color: white;
+            border-color: #6f4e37;
+        }
+
+        .subcat-section {
+            margin-bottom: 40px;
+        }
+
+        .subcat-title {
+            font-size: 1.5rem;
+            color: #6f4e37;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #6f4e37;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .food-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .food-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .food-info {
+            padding: 1.2rem;
+        }
+
+        .food-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            color: #6f4e37;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 8px 0;
+        }
+
+        .add-btn {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #5a3e2e;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf50;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            z-index: 1000;
+            display: none;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="logo">☕ CUP Coffee</div>
+    <div class="customer-info">
+        <span class="table-badge" id="tableDisplay"></span>
+        <span><i class="fas fa-user"></i> <span id="nameDisplay"></span></span>
+        <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i> Cart
+            <span class="cart-count" id="cartCount">0</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Menu Container -->
+<div class="menu-container">
+    <div id="categoryTabs" class="category-tabs"></div>
+    <div id="menuContent"></div>
+</div>
+
+<div id="toastMsg" class="toast-msg">✅ Item added to cart!</div>
+
+<script>
+    // Default image
+    const DEFAULT_IMAGE = "https://via.placeholder.com/300x200?text=Food+Image";
+
+    // Global menu data (will be loaded from localStorage)
+    let fullMenuData = {};
+
+    // Load customer info
+    const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+    if (customerInfo) {
+        document.getElementById("tableDisplay").innerHTML = `<i class="fas fa-chair"></i> ${customerInfo.tableNo}`;
+        document.getElementById("nameDisplay").innerText = customerInfo.name;
+    } else {
+        window.location.href = "customer-form.html";
+    }
+
+    let currentCategory = "";
+    let categories = [];
+
+    // Load menu from localStorage (synced with admin panel)
+    function loadMenuData() {
+        const savedMenu = localStorage.getItem("fullMenuData");
+        if (savedMenu && savedMenu !== "undefined" && savedMenu !== "null") {
+            try {
+                const parsed = JSON.parse(savedMenu);
+                if (parsed && Object.keys(parsed).length > 0) {
+                    fullMenuData = parsed;
+                    console.log("✅ Menu loaded from localStorage");
+                } else {
+                    useDefaultMenu();
+                }
+            } catch(e) {
+                console.error("Error parsing menu:", e);
+                useDefaultMenu();
+            }
+        } else {
+            useDefaultMenu();
+        }
+        
+        // Set categories
+        categories = Object.keys(fullMenuData);
+        if (categories.length > 0 && !currentCategory) {
+            currentCategory = categories[0];
+        }
+        
+        renderUI();
+    }
+
+    function useDefaultMenu() {
+        fullMenuData = {
+            Breakfast: {
+                Chicken: [
+                    { id: 1, name: "Chicken Sausage with Egg", price: 220, img: "https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?w=300&h=190&fit=crop" },
+                    { id: 2, name: "Chicken Omelette", price: 150, img: "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Egg: [
+                    { id: 4, name: "Egg Masala Omelette", price: 120, img: "https://images.pexels.com/photos/296188/pexels-photo-296188.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Veg: [
+                    { id: 6, name: "Aloo Paratha with Curd", price: 100, img: "https://images.pexels.com/photos/2089718/pexels-photo-2089718.jpeg?w=300&h=190&fit=crop" }
+                ]
+            },
+            Snacks: {
+                Chicken: [
+                    { id: 8, name: "Chicken Popcorn", price: 120, img: "https://images.pexels.com/photos/27414590/pexels-photo-27414590.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Paneer: [
+                    { id: 11, name: "Paneer 65", price: 150, img: "https://images.pexels.com/photos/6287525/pexels-photo-6287525.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Veg: [
+                    { id: 13, name: "Samosa", price: 40, img: "https://images.pexels.com/photos/6287550/pexels-photo-6287550.jpeg?w=300&h=190&fit=crop" }
+                ]
+            },
+            Lunch: {
+                Chicken: [
+                    { id: 15, name: "Chicken Biryani", price: 220, img: "https://images.pexels.com/photos/718742/pexels-photo-718742.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Paneer: [
+                    { id: 17, name: "Paneer Butter Masala", price: 200, img: "https://images.pexels.com/photos/1438672/pexels-photo-1438672.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Veg: [
+                    { id: 19, name: "Veg Thali", price: 150, img: "https://images.pexels.com/photos/8501264/pexels-photo-8501264.jpeg?w=300&h=190&fit=crop" }
+                ]
+            },
+            Beverages: {
+                "Tea/Coffee": [
+                    { id: 20, name: "Masala Chai", price: 30, img: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?w=300&h=190&fit=crop" },
+                    { id: 21, name: "Cappuccino", price: 120, img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=190&fit=crop" }
+                ],
+                Shakes: [
+                    { id: 23, name: "Chocolate Shake", price: 120, img: "https://images.pexels.com/photos/1351238/pexels-photo-1351238.jpeg?w=300&h=190&fit=crop" }
+                ]
+            }
+        };
+    }
+
+    function renderUI() {
+        if (categories.length === 0) {
+            document.getElementById("menuContent").innerHTML = '<div class="loading"><i class="fas fa-utensils"></i><p>No menu items available</p></div>';
+            return;
+        }
+        loadCategories();
+        loadMenuContent();
+        updateCartCount();
+    }
+
+    function loadCategories() {
+        const container = document.getElementById("categoryTabs");
+        container.innerHTML = "";
+        categories.forEach(cat => {
+            const btn = document.createElement("button");
+            btn.innerText = cat;
+            btn.classList.add("cat-btn");
+            if (cat === currentCategory) btn.classList.add("active");
+            btn.onclick = () => {
+                currentCategory = cat;
+                loadCategories();
+                loadMenuContent();
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function loadMenuContent() {
+        const container = document.getElementById("menuContent");
+        const subcategories = fullMenuData[currentCategory];
+        
+        if (!subcategories || Object.keys(subcategories).length === 0) {
+            container.innerHTML = '<div class="loading"><i class="fas fa-utensils"></i><p>No items in this category</p></div>';
+            return;
+        }
+        
+        container.innerHTML = "";
+        
+        for (const [subcat, items] of Object.entries(subcategories)) {
+            if (!items || items.length === 0) continue;
+            
+            const section = document.createElement("div");
+            section.classList.add("subcat-section");
+            section.innerHTML = `<h3 class="subcat-title">${subcat}</h3><div class="menu-grid" id="grid-${subcat.replace(/\s/g, '')}"></div>`;
+            container.appendChild(section);
+            
+            const grid = section.querySelector(`.menu-grid`);
+            items.forEach(item => {
+                const card = document.createElement("div");
+                card.classList.add("food-card");
+                const imgUrl = item.img && item.img !== "" ? item.img : DEFAULT_IMAGE;
+                card.innerHTML = `
+                    <img src="${imgUrl}" alt="${item.name}" loading="lazy" onerror="this.src='${DEFAULT_IMAGE}'">
+                    <div class="food-info">
+                        <h4>${escapeHtml(item.name)}</h4>
+                        <div class="price">₹${item.price}</div>
+                        <button class="add-btn" onclick="addToCart(${item.id}, '${escapeHtml(item.name)}', ${item.price}, '${imgUrl}')">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function addToCart(id, name, price, img) {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        let existing = cart.find(item => item.id == id);
+        
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            cart.push({ id, name, price, qty: 1, img: img });
+        }
+        
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
+        showToast();
+    }
+
+    function updateCartCount() {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+        document.getElementById("cartCount").innerText = totalItems;
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toastMsg");
+        toast.style.display = "block";
+        setTimeout(() => {
+            toast.style.display = "none";
+        }, 1500);
+    }
+
+    // Listen for localStorage changes (when admin updates menu)
+    let lastMenuData = null;
+    function checkForMenuUpdates() {
+        const currentMenu = localStorage.getItem("fullMenuData");
+        if (currentMenu !== lastMenuData) {
+            lastMenuData = currentMenu;
+            loadMenuData();
+        }
+        setTimeout(checkForMenuUpdates, 3000);
+    }
+
+    // Initialize
+    loadMenuData();
+    lastMenuData = localStorage.getItem("fullMenuData");
+    setTimeout(checkForMenuUpdates, 2000);
+</script>
+</body>
+</html>

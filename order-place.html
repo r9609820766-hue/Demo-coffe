@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Order - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .order-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .order-header {
+            background: #6f4e37;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .order-body {
+            padding: 30px;
+        }
+
+        .customer-card {
+            background: #f9f5f0;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+
+        .customer-card h3 {
+            margin-bottom: 15px;
+            color: #2c1810;
+        }
+
+        .customer-detail {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .order-items {
+            margin-bottom: 25px;
+        }
+
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-top: 2px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .payment-section {
+            margin: 25px 0;
+        }
+
+        .payment-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border: 2px solid #e0d6cf;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .payment-option.selected {
+            border-color: #6f4e37;
+            background: #f9f5f0;
+        }
+
+        .payment-option input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .payment-option label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .place-order-btn {
+            background: #ff9800;
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="order-container">
+    <div class="order-header">
+        <h2><i class="fas fa-clipboard-list"></i> Confirm Your Order</h2>
+        <p>Please review before placing order</p>
+    </div>
+    
+    <div class="order-body">
+        <div class="customer-card">
+            <h3><i class="fas fa-user"></i> Customer Details</h3>
+            <div class="customer-detail" id="customerDetails"></div>
+        </div>
+        
+        <div class="order-items">
+            <h3><i class="fas fa-utensils"></i> Order Items</h3>
+            <div id="orderItemsList"></div>
+            <div id="totalDisplay" class="total-row"></div>
+        </div>
+        
+        <div class="payment-section">
+            <h3><i class="fas fa-credit-card"></i> Select Payment Method</h3>
+            <div id="paymentOptions"></div>
+        </div>
+        
+        <button class="place-order-btn" onclick="placeOrder()">
+            <i class="fas fa-check-circle"></i> Place Order
+        </button>
+        <a href="cart.html" class="back-link">← Back to Cart</a>
+    </div>
+</div>
+
+<script>
+    const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    
+    if (!customerInfo) {
+        alert("Please scan QR and fill details first!");
+        window.location.href = "scan-qr.html";
+    }
+    
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        window.location.href = "menu-customer.html";
+    }
+    
+    // Display customer details
+    document.getElementById("customerDetails").innerHTML = `
+        <div><strong>Name:</strong> ${customerInfo.name}</div>
+        <div><strong>Mobile:</strong> ${customerInfo.mobile}</div>
+        <div><strong>Table:</strong> ${customerInfo.tableNo}</div>
+    `;
+    
+    let subtotal = 0;
+    let itemsHtml = "";
+    
+    cart.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        itemsHtml += `
+            <div class="order-item-row">
+                <span>${item.name} × ${item.qty}</span>
+                <span>₹${itemTotal}</span>
+            </div>
+        `;
+    });
+    
+    const gst = Math.round(subtotal * 0.05);
+    const total = subtotal + gst;
+    
+    document.getElementById("orderItemsList").innerHTML = itemsHtml;
+    document.getElementById("totalDisplay").innerHTML = `
+        <span>Subtotal:</span><span>₹${subtotal}</span>
+        <div style="width:100%; margin:5px 0;"></div>
+        <span>GST (5%):</span><span>₹${gst}</span>
+        <div style="width:100%; margin:5px 0;"></div>
+        <span style="font-size:1.3rem;">Total:</span>
+        <span style="font-size:1.3rem; color:#6f4e37;">₹${total}</span>
+    `;
+    
+    // Payment options
+    const paymentMethods = [
+        { value: "cash", label: "💵 Cash on Delivery", icon: "fa-money-bill" },
+        { value: "card", label: "💳 Credit/Debit Card", icon: "fa-credit-card" },
+        { value: "upi", label: "📱 UPI (Google Pay, PhonePe)", icon: "fa-mobile-alt" }
+    ];
+    
+    let selectedPayment = "cash";
+    const paymentDiv = document.getElementById("paymentOptions");
+    
+    paymentMethods.forEach(method => {
+        const optionDiv = document.createElement("div");
+        optionDiv.className = `payment-option ${selectedPayment === method.value ? 'selected' : ''}`;
+        optionDiv.innerHTML = `
+            <input type="radio" name="payment" value="${method.value}" ${selectedPayment === method.value ? 'checked' : ''}>
+            <label>${method.label}</label>
+        `;
+        optionDiv.onclick = () => {
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            optionDiv.classList.add('selected');
+            optionDiv.querySelector('input').checked = true;
+            selectedPayment = method.value;
+        };
+        paymentDiv.appendChild(optionDiv);
+    });
+    
+    function placeOrder() {
+        const selectedRadio = document.querySelector('input[name="payment"]:checked');
+        const paymentMethod = selectedRadio ? selectedRadio.value : "cash";
+        
+        const orderDetails = {
+            orderId: "ORD" + Date.now(),
+            customer: customerInfo,
+            items: cart,
+            subtotal: subtotal,
+            gst: gst,
+            totalAmount: total,
+            paymentMethod: paymentMethod,
+            orderTime: new Date().toISOString(),
+            status: "Pending"
+        };
+        
+        let allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        allOrders.push(orderDetails);
+        localStorage.setItem("allOrders", JSON.stringify(allOrders));
+        
+        localStorage.setItem("cart", JSON.stringify([]));
+        localStorage.setItem("lastOrder", JSON.stringify(orderDetails));
+        
+        window.location.href = "order-success.html";
+    }
+</script>
+</body>
+</html>

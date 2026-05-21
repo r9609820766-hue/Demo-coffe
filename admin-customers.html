@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Customers Management - CUP Coffee Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header span {
+            color: #d4a373;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #6f4e37;
+            color: white;
+            border-left-color: #d4a373;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card h3 {
+            font-size: 1.6rem;
+            color: #6f4e37;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            margin: 0 20px 20px 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filter-bar input {
+            padding: 10px 16px;
+            border: 1px solid #e0d6cf;
+            border-radius: 30px;
+            font-family: 'Inter', sans-serif;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-bar button {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        /* Customers Table */
+        .customers-container {
+            background: white;
+            border-radius: 20px;
+            margin: 0 20px 20px 20px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background: #f9f5f0;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .btn-sm {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .btn-info {
+            background: #2196f3;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .menu-toggle {
+                display: none;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 0.7rem;
+                padding: 8px 5px;
+            }
+            .filter-bar {
+                flex-direction: column;
+                margin: 0 15px 15px 15px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-orders.html" class="menu-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Table Bookings</a>
+        <a href="admin-tables.html" class="menu-item"><i class="fas fa-chair"></i> Tables</a>
+        <a href="admin-menu.html" class="menu-item"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-users"></i> Employees</a>
+        <a href="admin-kitchen.html" class="menu-item"><i class="fas fa-egg"></i> Kitchen Staff</a>
+        <a href="admin-customers.html" class="menu-item active"><i class="fas fa-user-friends"></i> Customers</a>
+        <a href="admin-stock.html" class="menu-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-content-settings.html" class="menu-item"><i class="fas fa-paint-brush"></i> Content</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-user-friends"></i> Customers Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Search by name, mobile or email...">
+        <button onclick="filterCustomers()"><i class="fas fa-search"></i> Search</button>
+        <button onclick="exportCustomers()"><i class="fas fa-download"></i> Export CSV</button>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="customers-container">
+        <div class="table-responsive">
+            <table id="customersTable">
+                <thead>
+                    <tr>
+                        <th>Sl No</th>
+                        <th>Customer Name</th>
+                        <th>Mobile Number</th>
+                        <th>Email</th>
+                        <th>Total Orders</th>
+                        <th>Total Spent</th>
+                        <th>Last Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customersList"></tbody>
+            </table>
+        </div>
+        <div id="noCustomersMsg" class="no-data" style="display: none;">
+            <i class="fas fa-user-friends" style="font-size: 3rem; color: #ccc;"></i>
+            <p>No customers found</p>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div id="customerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-circle"></i> Customer Details</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="customerDetailContent"></div>
+        <div style="margin-top: 20px;">
+            <button class="btn-sm btn-info" onclick="printCustomerDetails()"><i class="fas fa-print"></i> Print Details</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check login
+    if(localStorage.getItem("adminLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
+
+    // Sidebar Functions
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    if(menuToggle) menuToggle.onclick = openSidebar;
+
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 992) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    let allOrders = [];
+    let customersList = [];
+    let currentCustomer = null;
+
+    // Load Customers from Orders
+    function loadCustomers() {
+        allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        
+        const customersMap = new Map();
+        
+        allOrders.forEach(order => {
+            if(order.customer && order.customer.mobile) {
+                const mobile = order.customer.mobile;
+                if(!customersMap.has(mobile)) {
+                    customersMap.set(mobile, {
+                        name: order.customer.name || 'Guest',
+                        mobile: mobile,
+                        email: order.customer.email || '',
+                        orders: 0,
+                        totalSpent: 0,
+                        lastOrder: order.orderTime,
+                        firstOrder: order.orderTime,
+                        orderIds: []
+                    });
+                }
+                const cust = customersMap.get(mobile);
+                cust.orders++;
+                cust.totalSpent += (order.totalAmount || 0);
+                cust.orderIds.push(order.orderId);
+                if(new Date(order.orderTime) > new Date(cust.lastOrder)) {
+                    cust.lastOrder = order.orderTime;
+                }
+                if(new Date(order.orderTime) < new Date(cust.firstOrder)) {
+                    cust.firstOrder = order.orderTime;
+                }
+            }
+        });
+        
+        customersList = Array.from(customersMap.values());
+        customersList.sort((a,b) => b.totalSpent - a.totalSpent);
+        
+        loadStats();
+        renderCustomers();
+    }
+
+    function loadStats() {
+        const totalCustomers = customersList.length;
+        const totalOrders = allOrders.length;
+        const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        const avgSpent = totalCustomers > 0 ? Math.round(totalRevenue / totalCustomers) : 0;
+        const regularCustomers = customersList.filter(c => c.orders >= 3).length;
+
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${totalCustomers}</h3><p>👥 Total Customers</p></div>
+            <div class="stat-card"><h3>${totalOrders}</h3><p>📦 Total Orders</p></div>
+            <div class="stat-card"><h3>₹${totalRevenue.toLocaleString()}</h3><p>💰 Total Revenue</p></div>
+            <div class="stat-card"><h3>₹${avgSpent.toLocaleString()}</h3><p>📊 Avg per Customer</p></div>
+            <div class="stat-card"><h3>${regularCustomers}</h3><p>⭐ Regular (3+ orders)</p></div>
+            <div class="stat-card"><h3>${customersList.filter(c => c.orders === 1).length}</h3><p>🆕 New Customers</p></div>
+        `;
+    }
+
+    function filterCustomers() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        
+        let filtered = [...customersList];
+        
+        if(searchTerm) {
+            filtered = filtered.filter(c => 
+                c.name.toLowerCase().includes(searchTerm) ||
+                c.mobile.includes(searchTerm) ||
+                (c.email && c.email.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        renderCustomers(filtered);
+    }
+
+    function renderCustomers(customers = null) {
+        const tbody = document.getElementById("customersList");
+        const noMsg = document.getElementById("noCustomersMsg");
+        const data = customers || customersList;
+        
+        if(data.length === 0) {
+            tbody.innerHTML = "";
+            noMsg.style.display = "block";
+            return;
+        }
+        
+        noMsg.style.display = "none";
+        tbody.innerHTML = "";
+        
+        data.forEach((customer, index) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${escapeHtml(customer.name)}</strong></td>
+                <td>${customer.mobile}</td>
+                <td>${customer.email || '-'}</td>
+                <td><span style="background:#e8f5e9; padding:4px 10px; border-radius:20px;">${customer.orders}</span></td>
+                <td><strong style="color:#6f4e37;">₹${customer.totalSpent.toLocaleString()}</strong></td>
+                <td><small>${new Date(customer.lastOrder).toLocaleDateString()}</small></td>
+                <td>
+                    <button class="btn-sm btn-info" onclick="viewCustomer('${customer.mobile}')"><i class="fas fa-eye"></i> View</button>
+                 </td>
+            `;
+        });
+    }
+
+    function escapeHtml(text) {
+        if(!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function viewCustomer(mobile) {
+        const customer = customersList.find(c => c.mobile === mobile);
+        if(!customer) return;
+        
+        currentCustomer = customer;
+        
+        // Get customer's orders
+        const customerOrders = allOrders.filter(o => o.customer && o.customer.mobile === mobile);
+        customerOrders.sort((a,b) => new Date(b.orderTime) - new Date(a.orderTime));
+        
+        const modalContent = document.getElementById("customerDetailContent");
+        
+        modalContent.innerHTML = `
+            <div style="background:#f9f5f0; padding:15px; border-radius:12px; margin-bottom:15px;">
+                <h4>${escapeHtml(customer.name)}</h4>
+                <p><i class="fas fa-phone"></i> ${customer.mobile}</p>
+                <p><i class="fas fa-envelope"></i> ${customer.email || 'Not provided'}</p>
+                <p><i class="fas fa-chart-line"></i> Total Orders: ${customer.orders}</p>
+                <p><i class="fas fa-rupee-sign"></i> Total Spent: ₹${customer.totalSpent.toLocaleString()}</p>
+                <p><i class="fas fa-calendar"></i> First Order: ${new Date(customer.firstOrder).toLocaleDateString()}</p>
+                <p><i class="fas fa-calendar-check"></i> Last Order: ${new Date(customer.lastOrder).toLocaleDateString()}</p>
+            </div>
+            <h4>📋 Order History</h4>
+            <div class="table-responsive">
+                <table style="width:100%; font-size:0.8rem;">
+                    <thead>
+                        <tr><th>Order ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        ${customerOrders.map(o => `
+                            <tr>
+                                <td>${o.orderId}</td>
+                                <td>${new Date(o.orderTime).toLocaleDateString()}</td>
+                                <td>₹${o.totalAmount}</td>
+                                <td>${o.status || 'Pending'}</td>
+                                <td><button class="btn-sm" onclick="window.location.href='admin-orders.html'">View</button></td>
+                            </tr>
+                        `).join('')}
+                        ${customerOrders.length === 0 ? '<tr><td colspan="5" style="text-align:center;">No orders found</td></tr>' : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        document.getElementById("customerModal").classList.add("active");
+    }
+
+    function printCustomerDetails() {
+        if(!currentCustomer) return;
+        
+        const customerOrders = allOrders.filter(o => o.customer && o.customer.mobile === currentCustomer.mobile);
+        
+        const win = window.open();
+        win.document.write(`
+            <html>
+            <head>
+                <title>Customer Details - ${currentCustomer.name}</title>
+                <style>
+                    body { font-family: 'Inter', sans-serif; padding: 20px; }
+                    .header { text-align: center; border-bottom: 2px solid #6f4e37; padding-bottom: 10px; margin-bottom: 20px; }
+                    .info-box { background: #f9f5f0; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background: #6f4e37; color: white; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>CUP Coffee</h2>
+                    <p>Customer Details Report</p>
+                </div>
+                <div class="info-box">
+                    <h3>${escapeHtml(currentCustomer.name)}</h3>
+                    <p><strong>Mobile:</strong> ${currentCustomer.mobile}</p>
+                    <p><strong>Email:</strong> ${currentCustomer.email || 'Not provided'}</p>
+                    <p><strong>Total Orders:</strong> ${currentCustomer.orders}</p>
+                    <p><strong>Total Spent:</strong> ₹${currentCustomer.totalSpent.toLocaleString()}</p>
+                    <p><strong>Member Since:</strong> ${new Date(currentCustomer.firstOrder).toLocaleDateString()}</p>
+                </div>
+                <h3>Order History</h3>
+                <table>
+                    <thead><tr><th>Order ID</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${customerOrders.map(o => `
+                            <tr><td>${o.orderId}</td><td>${new Date(o.orderTime).toLocaleDateString()}</td><td>₹${o.totalAmount}</td><td>${o.status || 'Pending'}</td></tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p style="text-align:center; margin-top:30px; font-size:12px;">Generated on ${new Date().toLocaleString()}</p>
+            </body>
+            </html>
+        `);
+        win.print();
+    }
+
+    function exportCustomers() {
+        let csv = "Sl No,Name,Mobile,Email,Total Orders,Total Spent (₹),Last Order Date\n";
+        customersList.forEach((c, i) => {
+            csv += `"${i+1}","${c.name}","${c.mobile}","${c.email || ''}",${c.orders},${c.totalSpent},"${new Date(c.lastOrder).toLocaleDateString()}"\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `cup-customers-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function closeModal() {
+        document.getElementById("customerModal").classList.remove("active");
+        currentCustomer = null;
+    }
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "admin-login.html";
+    }
+
+    // Event Listeners
+    document.getElementById("searchInput").addEventListener("keyup", filterCustomers);
+
+    // Initial load
+    loadCustomers();
+</script>
+</body>
+</html>

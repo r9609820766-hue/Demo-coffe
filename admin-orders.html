@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Orders Management - CUP Coffee Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header span {
+            color: #d4a373;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #6f4e37;
+            color: white;
+            border-left-color: #d4a373;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px 12px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 1.6rem;
+            color: #6f4e37;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filter-bar select, .filter-bar input {
+            padding: 10px 16px;
+            border: 1px solid #e0d6cf;
+            border-radius: 30px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+
+        .filter-bar button {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .filter-bar button:hover {
+            background: #5a3e2e;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+        }
+
+        /* Orders Table */
+        .orders-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background: #f9f5f0;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .status-pending { background: #ff9800; color: white; }
+        .status-preparing { background: #2196f3; color: white; }
+        .status-ready { background: #9c27b0; color: white; }
+        .status-served { background: #4caf50; color: white; }
+        .status-cancelled { background: #f44336; color: white; }
+
+        .btn-sm {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: 0.3s;
+        }
+
+        .btn-sm:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger { background: #f44336; }
+        .btn-success { background: #4caf50; }
+        .btn-info { background: #2196f3; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        /* No Orders */
+        .no-orders {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .menu-toggle {
+                display: none;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 0.7rem;
+                padding: 8px 5px;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .stat-card h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-orders.html" class="menu-item active"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Table Bookings</a>
+        <a href="admin-tables.html" class="menu-item"><i class="fas fa-chair"></i> Tables</a>
+        <a href="admin-menu.html" class="menu-item"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-users"></i> Employees</a>
+         <a href="admin-kitchen.html" class="menu-item"><i class="fas fa-egg"></i> Kitchen Staff</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-user-friends"></i> Customers</a>
+        <a href="admin-stock.html" class="menu-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-content-settings.html" class="menu-item"><i class="fas fa-paint-brush"></i> Content</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-shopping-cart"></i> Orders Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <div class="container">
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <select id="statusFilter">
+                <option value="all">📋 All Orders</option>
+                <option value="pending">⏳ Pending</option>
+                <option value="preparing">👨‍🍳 Preparing</option>
+                <option value="ready">✅ Ready</option>
+                <option value="served">🍽️ Served</option>
+                <option value="cancelled">❌ Cancelled</option>
+            </select>
+            <select id="dateFilter">
+                <option value="all">📅 All Time</option>
+                <option value="today">📆 Today</option>
+                <option value="week">📊 Last 7 Days</option>
+                <option value="month">📈 Last 30 Days</option>
+            </select>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search by Order ID, Customer, Mobile...">
+                <button onclick="filterOrders()"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <button onclick="exportOrdersCSV()"><i class="fas fa-download"></i> Export CSV</button>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-container">
+            <div class="table-responsive">
+                <table id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date & Time</th>
+                            <th>Customer</th>
+                            <th>Table</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList"></tbody>
+                </table>
+            </div>
+            <div id="noOrdersMsg" class="no-orders" style="display: none;">
+                <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc;"></i>
+                <p>No orders found</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-receipt"></i> Order Details</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modalContent"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-sm btn-success" onclick="printFromModal()"><i class="fas fa-print"></i> Print Invoice</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check login
+    if(localStorage.getItem("adminLoggedIn") !== "true"){
+        window.location.href = "admin-login.html";
+    }
+
+    // ========== SIDEBAR FUNCTIONS ==========
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    function openSidebar() { 
+        sidebar.classList.add('open'); 
+        overlay.classList.add('active'); 
+    }
+    function closeSidebar() { 
+        sidebar.classList.remove('open'); 
+        overlay.classList.remove('active'); 
+    }
+    
+    if(menuToggle){
+        menuToggle.onclick = openSidebar;
+    }
+
+    // Close sidebar on window resize (desktop)
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 992) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // ========== GST SETTINGS ==========
+    function getGSTPercent() {
+        let gst = localStorage.getItem("gstPercent");
+        return gst ? parseFloat(gst) : 5;
+    }
+
+    // ========== DATA ==========
+    let allOrders = [];
+
+    function loadOrders() {
+        allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        filterOrders();
+        loadStats();
+    }
+
+    function loadStats() {
+        const totalOrders = allOrders.length;
+        const pendingOrders = allOrders.filter(o => o.status === "Pending").length;
+        const preparingOrders = allOrders.filter(o => o.status === "Preparing").length;
+        const readyOrders = allOrders.filter(o => o.status === "Ready").length;
+        const servedOrders = allOrders.filter(o => o.status === "Served").length;
+        const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${totalOrders}</h3><p>📦 Total Orders</p></div>
+            <div class="stat-card"><h3>${pendingOrders}</h3><p>⏳ Pending</p></div>
+            <div class="stat-card"><h3>${preparingOrders}</h3><p>👨‍🍳 Preparing</p></div>
+            <div class="stat-card"><h3>${readyOrders}</h3><p>✅ Ready</p></div>
+            <div class="stat-card"><h3>${servedOrders}</h3><p>🍽️ Served</p></div>
+            <div class="stat-card"><h3>₹${totalRevenue.toLocaleString()}</h3><p>💰 Revenue</p></div>
+        `;
+    }
+
+    function filterOrders() {
+        const status = document.getElementById("statusFilter").value;
+        const dateRange = document.getElementById("dateFilter").value;
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+        let filtered = [...allOrders];
+
+        // Status filter
+        if(status !== "all"){
+            filtered = filtered.filter(o => (o.status || "Pending").toLowerCase() === status);
+        }
+
+        // Date filter
+        const now = new Date();
+        if(dateRange === "today"){
+            const todayStr = now.toDateString();
+            filtered = filtered.filter(o => new Date(o.orderTime).toDateString() === todayStr);
+        } else if(dateRange === "week"){
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            filtered = filtered.filter(o => new Date(o.orderTime) >= weekAgo);
+        } else if(dateRange === "month"){
+            const monthAgo = new Date();
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            filtered = filtered.filter(o => new Date(o.orderTime) >= monthAgo);
+        }
+
+        // Search filter
+        if(searchTerm){
+            filtered = filtered.filter(o => 
+                o.orderId.toLowerCase().includes(searchTerm) ||
+                (o.customer?.name || "").toLowerCase().includes(searchTerm) ||
+                (o.customer?.mobile || "").includes(searchTerm)
+            );
+        }
+
+        // Sort by date (newest first)
+        filtered.sort((a,b) => new Date(b.orderTime) - new Date(a.orderTime));
+
+        renderOrders(filtered);
+    }
+
+    function renderOrders(orders) {
+        const tbody = document.getElementById("ordersList");
+        const noMsg = document.getElementById("noOrdersMsg");
+
+        if(orders.length === 0){
+            tbody.innerHTML = "";
+            noMsg.style.display = "block";
+            return;
+        }
+
+        noMsg.style.display = "none";
+        tbody.innerHTML = "";
+
+        orders.forEach((order) => {
+            const status = order.status || "Pending";
+            const statusClass = `status-${status.toLowerCase()}`;
+            
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td><strong style="color:#6f4e37;">${order.orderId}</strong></td>
+                <td><small>${new Date(order.orderTime).toLocaleString()}</small></td>
+                <td>
+                    <strong>${order.customer?.name || 'Guest'}</strong><br>
+                    <small style="color:#888;">${order.customer?.mobile || ''}</small>
+                </td>
+                <td><span style="background:#f0f0f0; padding:4px 10px; border-radius:20px;">${order.customer?.tableNo || 'Takeaway'}</span></td>
+                <td>${order.items?.map(i => `<span style="background:#f5f5f5; padding:2px 6px; margin:2px; display:inline-block; border-radius:12px;">${i.name} ×${i.qty}</span>`).join("") || '-'}</td>
+                <td><strong style="color:#2c1810;">₹${order.totalAmount}</strong></td>
+                <td>${getPaymentIcon(order.paymentMethod)} ${order.paymentMethod || 'Cash'}</td>
+                <td><span class="status-badge ${statusClass}">${status}</span></td>
+                <td>
+                    <select onchange="updateOrderStatus('${order.orderId}', this.value)" style="padding:5px 8px; border-radius:15px; border:1px solid #ddd; margin-bottom:5px;">
+                        <option ${status==='Pending'?'selected':''}>Pending</option>
+                        <option ${status==='Preparing'?'selected':''}>Preparing</option>
+                        <option ${status==='Ready'?'selected':''}>Ready</option>
+                        <option ${status==='Served'?'selected':''}>Served</option>
+                        <option ${status==='Cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                    <div style="margin-top:5px;">
+                        <button class="btn-sm btn-info" onclick="viewOrder('${order.orderId}')"><i class="fas fa-eye"></i> View</button>
+                        <button class="btn-sm" onclick="printInvoice('${order.orderId}')"><i class="fas fa-print"></i> Print</button>
+                    </div>
+                </td>
+            `;
+        });
+    }
+
+    function getPaymentIcon(method) {
+        if(method === 'cash') return '💵';
+        if(method === 'card') return '💳';
+        if(method === 'upi') return '📱';
+        return '💰';
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+        const index = allOrders.findIndex(o => o.orderId === orderId);
+        if(index !== -1){
+            allOrders[index].status = newStatus;
+            localStorage.setItem("allOrders", JSON.stringify(allOrders));
+            loadOrders();
+        }
+    }
+
+    function viewOrder(orderId) {
+        const order = allOrders.find(o => o.orderId === orderId);
+        if(!order) return;
+
+        const gstPercent = getGSTPercent();
+        const subtotal = order.subtotal || (order.totalAmount / (1 + gstPercent/100));
+        const gstAmount = order.gst || (order.totalAmount - subtotal);
+
+        const modal = document.getElementById("orderModal");
+        const modalContent = document.getElementById("modalContent");
+        
+        modalContent.innerHTML = `
+            <div style="background:#f9f5f0; padding:12px; border-radius:12px; margin-bottom:15px;">
+                <p><strong>🆔 Order ID:</strong> ${order.orderId}</p>
+                <p><strong>📅 Date:</strong> ${new Date(order.orderTime).toLocaleString()}</p>
+                <p><strong>👤 Customer:</strong> ${order.customer?.name || 'Guest'}</p>
+                <p><strong>📞 Mobile:</strong> ${order.customer?.mobile || '-'}</p>
+                <p><strong>🪑 Table:</strong> ${order.customer?.tableNo || 'Takeaway'}</p>
+            </div>
+            <h4 style="margin:15px 0 10px;">🍽️ Order Items:</h4>
+            <table style="width:100%; margin-top:5px; border-collapse:collapse;">
+                <thead style="background:#f0f0f0;">
+                    <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                    ${order.items?.map(i => `
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td>${i.name}</td>
+                            <td>×${i.qty}</td>
+                            <td>₹${i.price}</td>
+                            <td>₹${i.price * i.qty}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="3"><strong>Subtotal</strong></td><td><strong>₹${Math.round(subtotal)}</strong></td></tr>
+                    <tr><td colspan="3">GST (${gstPercent}%)</td><td>₹${Math.round(gstAmount)}</td></tr>
+                    <tr style="border-top:2px solid #ddd;"><td colspan="3"><strong>Total</strong></td><td><strong style="color:#6f4e37;">₹${order.totalAmount}</strong></td></tr>
+                </tfoot>
+            </table>
+            <hr style="margin:15px 0;">
+            <p><strong>💳 Payment Method:</strong> ${getPaymentIcon(order.paymentMethod)} ${order.paymentMethod || 'Cash'}</p>
+            <p><strong>📌 Status:</strong> <span class="status-badge status-${(order.status||'pending').toLowerCase()}">${order.status||'Pending'}</span></p>
+            ${order.customer?.specialRequest ? `<p><strong>💬 Special Request:</strong> ${order.customer.specialRequest}</p>` : ''}
+        `;
+        
+        modal.classList.add("active");
+        window.currentPrintOrder = order;
+    }
+
+    function closeModal() {
+        document.getElementById("orderModal").classList.remove("active");
+    }
+
+    function printInvoice(orderId) {
+        const order = allOrders.find(o => o.orderId === orderId);
+        if(!order) return;
+        generatePrintWindow(order);
+    }
+
+    function printFromModal() {
+        if(window.currentPrintOrder){
+            generatePrintWindow(window.currentPrintOrder);
+        }
+    }
+
+    function generatePrintWindow(order) {
+        const gstPercent = getGSTPercent();
+        const subtotal = order.subtotal || (order.totalAmount / (1 + gstPercent/100));
+        const gstAmount = order.gst || (order.totalAmount - subtotal);
+        
+        const win = window.open();
+        win.document.write(`
+            <html>
+            <head>
+                <title>Invoice ${order.orderId}</title>
+                <style>
+                    @page { size: 58mm; margin: 0; }
+                    body { 
+                        font-family: 'Courier New', monospace; 
+                        font-size: 11px; 
+                        width: 58mm; 
+                        margin: 0 auto; 
+                        padding: 8px 5px;
+                    }
+                    .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 10px; }
+                    .header h3 { margin: 0; font-size: 14px; }
+                    .items { width: 100%; border-collapse: collapse; }
+                    .items td { padding: 4px 0; }
+                    .total { border-top: 1px dashed #000; margin-top: 8px; padding-top: 5px; }
+                    .footer { text-align: center; margin-top: 12px; border-top: 1px dashed #000; padding-top: 5px; font-size: 9px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h3>CUP Coffee</h3>
+                    <p>123 Coffee Street, Food City<br>Tel: +91 98765 43210</p>
+                </div>
+                <div>
+                    <strong>${order.orderId}</strong><br>
+                    ${new Date(order.orderTime).toLocaleString()}<br>
+                    Table: ${order.customer?.tableNo || 'Takeaway'}<br>
+                    Customer: ${order.customer?.name || 'Guest'}
+                </div>
+                <hr>
+                <table class="items" width="100%">
+                    ${order.items?.map(i => `<tr><td>${i.name}</td><td align="right">×${i.qty}</td><td align="right">₹${i.price}</td><td align="right">₹${i.price * i.qty}</td></tr>`).join('')}
+                </table>
+                <div class="total">
+                    Subtotal: ₹${Math.round(subtotal)}<br>
+                    GST(${gstPercent}%): ₹${Math.round(gstAmount)}<br>
+                    <strong>TOTAL: ₹${order.totalAmount}</strong><br>
+                    Payment: ${order.paymentMethod || 'Cash'}
+                </div>
+                <div class="footer">
+                    Thank you! Visit Again ☕<br>
+                    ** This is system generated invoice **
+                </div>
+            </body>
+            </html>
+        `);
+        win.print();
+    }
+
+    function exportOrdersCSV() {
+        let csv = "Order ID,Date,Customer,Mobile,Table,Items,Subtotal,GST,Total,Payment,Status\n";
+        const gstPercent = getGSTPercent();
+        
+        allOrders.forEach(o => {
+            const subtotal = o.subtotal || (o.totalAmount / (1 + gstPercent/100));
+            const gstAmount = o.gst || (o.totalAmount - subtotal);
+            csv += `"${o.orderId}","${new Date(o.orderTime).toLocaleString()}","${o.customer?.name || 'Guest'}","${o.customer?.mobile || ''}","${o.customer?.tableNo || 'Takeaway'}","${o.items?.map(i=>`${i.name}x${i.qty}`).join('; ')}",${Math.round(subtotal)},${Math.round(gstAmount)},${o.totalAmount},"${o.paymentMethod || 'cash'}","${o.status || 'Pending'}"\n`;
+        });
+        
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `cup-orders-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "admin-login.html";
+    }
+
+    // Event Listeners
+    const statusFilter = document.getElementById("statusFilter");
+    const dateFilter = document.getElementById("dateFilter");
+    const searchInput = document.getElementById("searchInput");
+    
+    if(statusFilter) statusFilter.addEventListener("change", filterOrders);
+    if(dateFilter) dateFilter.addEventListener("change", filterOrders);
+    if(searchInput) searchInput.addEventListener("keyup", filterOrders);
+
+    // Initial load
+    loadOrders();
+</script>
+</body>
+</html>

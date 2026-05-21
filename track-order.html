@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .track-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .track-header {
+            background: #6f4e37;
+            color: white;
+            padding: 30px 25px;
+            text-align: center;
+        }
+
+        .track-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .track-header p {
+            opacity: 0.9;
+        }
+
+        .track-body {
+            padding: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 18px;
+            border: 2px solid #e8e0d8;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #6f4e37;
+        }
+
+        .search-box button {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 0 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5a3e2e;
+        }
+
+        .order-card {
+            background: #f9f5f0;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #6f4e37;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-preparing {
+            background: #2196f3;
+            color: white;
+        }
+
+        .status-ready {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-served {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .order-details {
+            margin: 15px 0;
+            padding: 12px;
+            background: white;
+            border-radius: 15px;
+        }
+
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .order-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: #e0d6cf;
+            z-index: 1;
+        }
+
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-dot {
+            width: 50px;
+            height: 50px;
+            background: #e0d6cf;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .step.completed .step-dot {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step.current .step-dot {
+            background: #ff9800;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255,152,0,0.4);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(255,152,0,0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255,152,0,0);
+            }
+        }
+
+        .step-label {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .step.completed .step-label {
+            color: #4caf50;
+            font-weight: 500;
+        }
+
+        .step.current .step-label {
+            color: #ff9800;
+            font-weight: 600;
+        }
+
+        .no-order {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #6f4e37;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 500px) {
+            .step-dot {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .step-label {
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="track-container">
+    <div class="track-header">
+        <h2><i class="fas fa-map-marker-alt"></i> Track Order</h2>
+        <p>Enter your mobile number to check order status</p>
+    </div>
+    
+    <div class="track-body">
+        <div class="search-box">
+            <input type="tel" id="trackMobile" placeholder="Enter 10 digit mobile number" maxlength="10">
+            <button onclick="trackOrder()">
+                <i class="fas fa-search"></i> Track
+            </button>
+        </div>
+        
+        <div id="trackResult"></div>
+        
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+<script>
+    function trackOrder() {
+        const mobile = document.getElementById("trackMobile").value.trim();
+        const resultDiv = document.getElementById("trackResult");
+        
+        if (mobile === "") {
+            resultDiv.innerHTML = `<div class="order-card" style="background:#ffebee; color:#c62828;">
+                <i class="fas fa-exclamation-circle"></i> Please enter mobile number
+            </div>`;
+            return;
+        }
+        
+        if (mobile.length !== 10 || isNaN(mobile)) {
+            resultDiv.innerHTML = `<div class="order-card" style="background:#ffebee; color:#c62828;">
+                <i class="fas fa-exclamation-circle"></i> Please enter a valid 10 digit mobile number
+            </div>`;
+            return;
+        }
+        
+        const allOrders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        const customerOrders = allOrders.filter(order => order.customer && order.customer.mobile === mobile);
+        
+        if (customerOrders.length === 0) {
+            resultDiv.innerHTML = `
+                <div class="order-card" style="background:#fff3e0; text-align:center;">
+                    <i class="fas fa-search" style="font-size: 2rem; color: #ff9800; margin-bottom: 10px; display: block;"></i>
+                    <strong>No orders found</strong><br>
+                    <small>No orders found for mobile number ${mobile}</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort orders by most recent first
+        customerOrders.sort((a, b) => new Date(b.orderTime) - new Date(a.orderTime));
+        
+        resultDiv.innerHTML = "";
+        
+        customerOrders.forEach(order => {
+            const status = order.status || "Pending";
+            let statusIndex = 0;
+            const statuses = ["Pending", "Preparing", "Ready", "Served"];
+            statusIndex = statuses.indexOf(status);
+            if (statusIndex === -1) statusIndex = 0;
+            
+            // Items list
+            let itemsHtml = "";
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="order-detail-row">
+                        <span>${item.name} × ${item.qty}</span>
+                        <span>₹${item.price * item.qty}</span>
+                    </div>
+                `;
+            });
+            
+            const orderHtml = `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id"><i class="fas fa-receipt"></i> ${order.orderId}</span>
+                        <span class="status-badge status-${status.toLowerCase()}">${status}</span>
+                    </div>
+                    
+                    <div><i class="fas fa-chair"></i> Table: ${order.customer.tableNo} | <i class="fas fa-user"></i> ${order.customer.name}</div>
+                    <div><i class="fas fa-calendar"></i> ${new Date(order.orderTime).toLocaleString()}</div>
+                    
+                    <div class="order-details">
+                        ${itemsHtml}
+                        <div class="order-detail-row" style="font-weight: bold; border-top: 2px solid #ddd; margin-top: 8px; padding-top: 8px;">
+                            <span>Total:</span>
+                            <span>₹${order.totalAmount}</span>
+                        </div>
+                        <div class="order-detail-row">
+                            <span>Payment:</span>
+                            <span>${order.paymentMethod === 'cash' ? '💵 Cash' : order.paymentMethod === 'card' ? '💳 Card' : '📱 UPI'}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Tracker -->
+                    <div class="progress-steps">
+                        <div class="step ${statusIndex >= 0 ? 'completed' : ''}">
+                            <div class="step-dot">✓</div>
+                            <div class="step-label">Received</div>
+                        </div>
+                        <div class="step ${statusIndex >= 1 ? 'completed' : statusIndex === 0 ? 'current' : ''}">
+                            <div class="step-dot">${statusIndex >= 1 ? '✓' : '👨‍🍳'}</div>
+                            <div class="step-label">Preparing</div>
+                        </div>
+                        <div class="step ${statusIndex >= 2 ? 'completed' : statusIndex === 1 ? 'current' : ''}">
+                            <div class="step-dot">${statusIndex >= 2 ? '✓' : '✅'}</div>
+                            <div class="step-label">Ready</div>
+                        </div>
+                        <div class="step ${statusIndex >= 3 ? 'completed' : statusIndex === 2 ? 'current' : ''}">
+                            <div class="step-dot">${statusIndex >= 3 ? '✓' : '🍽️'}</div>
+                            <div class="step-label">Served</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            resultDiv.innerHTML += orderHtml;
+        });
+    }
+    
+    // Allow Enter key to search
+    document.getElementById("trackMobile").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            trackOrder();
+        }
+    });
+</script>
+</body>
+</html>

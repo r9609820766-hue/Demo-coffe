@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kitchen Staff Management - CUP Coffee Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header span {
+            color: #d4a373;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #6f4e37;
+            color: white;
+            border-left-color: #d4a373;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card h3 {
+            font-size: 1.6rem;
+            color: #6f4e37;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            margin: 0 20px 20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #5a3e2e;
+        }
+
+        .btn-sm {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-success {
+            background: #4caf50;
+        }
+
+        .btn-warning {
+            background: #ff9800;
+        }
+
+        /* Staff Grid */
+        .staff-container {
+            background: white;
+            border-radius: 20px;
+            margin: 0 20px 20px 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .staff-card {
+            background: #f9f5f0;
+            border-radius: 20px;
+            padding: 20px;
+            transition: 0.3s;
+            border: 1px solid #e0d6cf;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .staff-card.inactive {
+            opacity: 0.6;
+            background: #f0f0f0;
+        }
+
+        .staff-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #6f4e37;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .staff-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .staff-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .staff-id {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .staff-section {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin: 8px 0;
+        }
+
+        .section-chef { background: #f44336; color: white; }
+        .section-cook { background: #2196f3; color: white; }
+        .section-helper { background: #4caf50; color: white; }
+        .section-cleaner { background: #9c27b0; color: white; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .status-active { background: #4caf50; color: white; }
+        .status-inactive { background: #999; color: white; }
+
+        .staff-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .menu-toggle {
+                display: none;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .staff-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-bar {
+                flex-direction: column;
+                margin: 0 15px 15px 15px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-orders.html" class="menu-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Table Bookings</a>
+        <a href="admin-tables.html" class="menu-item"><i class="fas fa-chair"></i> Tables</a>
+        <a href="admin-menu.html" class="menu-item"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-users"></i> Employees</a>
+        <a href="admin-kitchen.html" class="menu-item active"><i class="fas fa-egg"></i> Kitchen Staff</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-user-friends"></i> Customers</a>
+        <a href="admin-stock.html" class="menu-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-content-settings.html" class="menu-item"><i class="fas fa-paint-brush"></i> Content</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-egg"></i> Kitchen Staff Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <button class="btn-primary" onclick="openStaffModal()"><i class="fas fa-plus"></i> Add Kitchen Staff</button>
+        <div>
+            <button class="btn-primary" onclick="exportStaff()" style="background:#2196f3;"><i class="fas fa-download"></i> Export</button>
+            <button class="btn-primary" onclick="resetDefaultStaff()" style="background:#ff9800;"><i class="fas fa-undo"></i> Reset Default</button>
+        </div>
+    </div>
+
+    <!-- Staff Grid -->
+    <div class="staff-container">
+        <div id="staffGrid" class="staff-grid"></div>
+        <div id="noStaffMsg" class="no-data" style="display: none;">
+            <i class="fas fa-egg" style="font-size: 3rem; color: #ccc;"></i>
+            <p>No kitchen staff found. Click "Add Kitchen Staff" to create one.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Staff Modal -->
+<div id="staffModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle"><i class="fas fa-user-plus"></i> Add Kitchen Staff</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div>
+            <div class="form-group">
+                <label>Staff ID *</label>
+                <input type="text" id="staffId" placeholder="e.g., KIT001">
+            </div>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="staffName" placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+                <label>Mobile Number *</label>
+                <input type="tel" id="staffMobile" placeholder="10 digit mobile number" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>Password *</label>
+                <input type="password" id="staffPassword" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label>Section *</label>
+                <select id="staffSection">
+                    <option value="chef">👨‍🍳 Head Chef</option>
+                    <option value="cook">🍳 Cook</option>
+                    <option value="helper">🥬 Helper</option>
+                    <option value="cleaner">🧹 Cleaner</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="staffStatus">
+                    <option value="active">🟢 Active</option>
+                    <option value="inactive">🔴 Inactive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Profile Picture (Optional)</label>
+                <input type="file" id="staffAvatar" accept="image/*" onchange="previewAvatar(event)">
+                <img id="avatarPreview" class="avatar-preview" style="display: none;">
+            </div>
+            <div class="modal-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-primary" onclick="saveStaff()">Save Staff</button>
+                <button class="btn-primary btn-danger" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check login
+    if(localStorage.getItem("adminLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
+
+    // Sidebar Functions
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    if(menuToggle) menuToggle.onclick = openSidebar;
+
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 992) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // Default Kitchen Staff Data
+    const defaultStaff = [
+        { id: "KIT001", name: "Chef Kumar", mobile: "9876543210", password: "kitchen123", section: "chef", status: "active", avatar: null },
+        { id: "KIT002", name: "Cook Sharma", mobile: "9876543211", password: "kitchen123", section: "cook", status: "active", avatar: null },
+        { id: "KIT003", name: "Helper Raj", mobile: "9876543212", password: "kitchen123", section: "helper", status: "active", avatar: null },
+        { id: "KIT004", name: "Cleaner Meena", mobile: "9876543213", password: "kitchen123", section: "cleaner", status: "active", avatar: null }
+    ];
+
+    let staffList = [];
+    let editStaffId = null;
+    let currentAvatarData = null;
+
+    // Load Staff
+    function loadStaff() {
+        const stored = localStorage.getItem("kitchenStaff");
+        if(stored) {
+            staffList = JSON.parse(stored);
+        } else {
+            staffList = [...defaultStaff];
+            localStorage.setItem("kitchenStaff", JSON.stringify(staffList));
+        }
+        renderStaff();
+        loadStats();
+    }
+
+    function loadStats() {
+        const total = staffList.length;
+        const active = staffList.filter(s => s.status === "active").length;
+        const inactive = staffList.filter(s => s.status === "inactive").length;
+        const chef = staffList.filter(s => s.section === "chef").length;
+        const cook = staffList.filter(s => s.section === "cook").length;
+        const helper = staffList.filter(s => s.section === "helper").length;
+        const cleaner = staffList.filter(s => s.section === "cleaner").length;
+
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${total}</h3><p>👥 Total Staff</p></div>
+            <div class="stat-card"><h3>${active}</h3><p>🟢 Active</p></div>
+            <div class="stat-card"><h3>${inactive}</h3><p>🔴 Inactive</p></div>
+            <div class="stat-card"><h3>${chef}</h3><p>👨‍🍳 Chef</p></div>
+            <div class="stat-card"><h3>${cook}</h3><p>🍳 Cook</p></div>
+            <div class="stat-card"><h3>${helper + cleaner}</h3><p>🥬 Helper+Cleaner</p></div>
+        `;
+    }
+
+    function getSectionIcon(section) {
+        switch(section) {
+            case 'chef': return '👨‍🍳';
+            case 'cook': return '🍳';
+            case 'helper': return '🥬';
+            case 'cleaner': return '🧹';
+            default: return '👤';
+        }
+    }
+
+    function getSectionClass(section) {
+        return `section-${section}`;
+    }
+
+    function renderStaff() {
+        const container = document.getElementById("staffGrid");
+        const noMsg = document.getElementById("noStaffMsg");
+        
+        if(staffList.length === 0) {
+            container.innerHTML = "";
+            noMsg.style.display = "block";
+            return;
+        }
+        
+        noMsg.style.display = "none";
+        
+        container.innerHTML = staffList.map(staff => {
+            const sectionClass = getSectionClass(staff.section);
+            const sectionIcon = getSectionIcon(staff.section);
+            const statusClass = staff.status === "active" ? "status-active" : "status-inactive";
+            const cardClass = staff.status === "inactive" ? "staff-card inactive" : "staff-card";
+            const avatarHtml = staff.avatar ? `<img src="${staff.avatar}" alt="${staff.name}">` : `<i class="fas fa-user"></i>`;
+            
+            let sectionName = "Chef";
+            if(staff.section === 'chef') sectionName = "Head Chef";
+            else if(staff.section === 'cook') sectionName = "Cook";
+            else if(staff.section === 'helper') sectionName = "Helper";
+            else sectionName = "Cleaner";
+            
+            return `
+                <div class="${cardClass}">
+                    <div class="staff-avatar">${avatarHtml}</div>
+                    <div class="staff-name">${staff.name}</div>
+                    <div class="staff-id">ID: ${staff.id}</div>
+                    <div><span class="staff-section ${sectionClass}">${sectionIcon} ${sectionName}</span></div>
+                    <div><i class="fas fa-phone"></i> ${staff.mobile}</div>
+                    <div style="margin-top: 8px;"><span class="status-badge ${statusClass}">${staff.status === "active" ? '🟢 Active' : '🔴 Inactive'}</span></div>
+                    <div class="staff-actions">
+                        <button class="btn-sm" onclick="editStaff('${staff.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-sm ${staff.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="toggleStatus('${staff.id}')">
+                            <i class="fas ${staff.status === 'active' ? 'fa-ban' : 'fa-check'}"></i> ${staff.status === 'active' ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button class="btn-sm btn-danger" onclick="deleteStaff('${staff.id}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Open Modal for Add/Edit
+    function openStaffModal() {
+        editStaffId = null;
+        currentAvatarData = null;
+        document.getElementById("modalTitle").innerHTML = '<i class="fas fa-user-plus"></i> Add Kitchen Staff';
+        document.getElementById("staffId").value = "";
+        document.getElementById("staffName").value = "";
+        document.getElementById("staffMobile").value = "";
+        document.getElementById("staffPassword").value = "";
+        document.getElementById("staffSection").value = "cook";
+        document.getElementById("staffStatus").value = "active";
+        document.getElementById("avatarPreview").style.display = "none";
+        document.getElementById("avatarPreview").src = "";
+        document.getElementById("staffModal").classList.add("active");
+    }
+
+    function editStaff(id) {
+        const staff = staffList.find(s => s.id === id);
+        if(!staff) return;
+        
+        editStaffId = id;
+        document.getElementById("modalTitle").innerHTML = '<i class="fas fa-edit"></i> Edit Kitchen Staff';
+        document.getElementById("staffId").value = staff.id;
+        document.getElementById("staffName").value = staff.name;
+        document.getElementById("staffMobile").value = staff.mobile;
+        document.getElementById("staffPassword").value = "";
+        document.getElementById("staffSection").value = staff.section;
+        document.getElementById("staffStatus").value = staff.status;
+        
+        if(staff.avatar) {
+            document.getElementById("avatarPreview").src = staff.avatar;
+            document.getElementById("avatarPreview").style.display = "block";
+            currentAvatarData = staff.avatar;
+        } else {
+            document.getElementById("avatarPreview").style.display = "none";
+            currentAvatarData = null;
+        }
+        
+        document.getElementById("staffModal").classList.add("active");
+    }
+
+    function previewAvatar(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentAvatarData = e.target.result;
+                document.getElementById("avatarPreview").src = currentAvatarData;
+                document.getElementById("avatarPreview").style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function saveStaff() {
+        const id = document.getElementById("staffId").value.trim();
+        const name = document.getElementById("staffName").value.trim();
+        const mobile = document.getElementById("staffMobile").value.trim();
+        const password = document.getElementById("staffPassword").value;
+        const section = document.getElementById("staffSection").value;
+        const status = document.getElementById("staffStatus").value;
+        
+        if(!id || !name || !mobile) {
+            alert("Please fill Staff ID, Name and Mobile number");
+            return;
+        }
+        
+        if(mobile.length !== 10 || isNaN(mobile)) {
+            alert("Please enter valid 10 digit mobile number");
+            return;
+        }
+        
+        if(!editStaffId && !password) {
+            alert("Please enter password for new staff");
+            return;
+        }
+        
+        if(editStaffId) {
+            const index = staffList.findIndex(s => s.id === editStaffId);
+            if(index !== -1) {
+                staffList[index] = {
+                    ...staffList[index],
+                    name, mobile, section, status,
+                    avatar: currentAvatarData || staffList[index].avatar
+                };
+                if(password) staffList[index].password = password;
+            }
+        } else {
+            // Check duplicate ID
+            if(staffList.some(s => s.id === id)) {
+                alert("Staff ID already exists!");
+                return;
+            }
+            staffList.push({
+                id, name, mobile, password, section, status,
+                avatar: currentAvatarData || null
+            });
+        }
+        
+        localStorage.setItem("kitchenStaff", JSON.stringify(staffList));
+        closeModal();
+        loadStaff();
+        showToast(editStaffId ? "Staff updated!" : "Staff added!");
+    }
+
+    function toggleStatus(id) {
+        const index = staffList.findIndex(s => s.id === id);
+        if(index !== -1) {
+            staffList[index].status = staffList[index].status === "active" ? "inactive" : "active";
+            localStorage.setItem("kitchenStaff", JSON.stringify(staffList));
+            loadStaff();
+            showToast(`Staff ${staffList[index].status === "active" ? "activated" : "deactivated"}!`);
+        }
+    }
+
+    function deleteStaff(id) {
+        if(confirm("Are you sure you want to delete this kitchen staff member?")) {
+            staffList = staffList.filter(s => s.id !== id);
+            localStorage.setItem("kitchenStaff", JSON.stringify(staffList));
+            loadStaff();
+            showToast("Staff deleted!");
+        }
+    }
+
+    function resetDefaultStaff() {
+        if(confirm("Reset to default kitchen staff? This will delete all custom staff.")) {
+            staffList = [...defaultStaff];
+            localStorage.setItem("kitchenStaff", JSON.stringify(staffList));
+            loadStaff();
+            showToast("Reset to default kitchen staff!");
+        }
+    }
+
+    function exportStaff() {
+        let csv = "ID,Name,Mobile,Section,Status\n";
+        staffList.forEach(s => {
+            let sectionName = s.section === 'chef' ? 'Head Chef' : (s.section === 'cook' ? 'Cook' : (s.section === 'helper' ? 'Helper' : 'Cleaner'));
+            csv += `"${s.id}","${s.name}","${s.mobile}","${sectionName}","${s.status}"\n`;
+        });
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `cup-kitchen-staff-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.innerText = msg;
+        toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#4caf50; color:white; padding:10px 20px; border-radius:30px; z-index:2000;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    function closeModal() {
+        document.getElementById("staffModal").classList.remove("active");
+        editStaffId = null;
+        currentAvatarData = null;
+    }
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "admin-login.html";
+    }
+
+    // Initial load
+    loadStaff();
+</script>
+</body>
+</html>

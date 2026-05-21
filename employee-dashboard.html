@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Employee Dashboard - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header span {
+            color: #d4a373;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #6f4e37;
+            color: white;
+            border-left-color: #d4a373;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Employee Info Bar */
+        .emp-info-bar {
+            background: white;
+            padding: 12px 20px;
+            margin: 0 20px 20px 20px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .emp-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .emp-avatar {
+            width: 50px;
+            height: 50px;
+            background: #6f4e37;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .emp-name {
+            font-weight: 600;
+            color: #2c1810;
+        }
+
+        .emp-role {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card h3 {
+            font-size: 1.6rem;
+            color: #6f4e37;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Content Panel */
+        .content-area {
+            padding: 20px;
+        }
+
+        .content-panel {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f9f5f0;
+            font-weight: 600;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+        .status-pending { background: #ff9800; color: white; }
+        .status-preparing { background: #2196f3; color: white; }
+        .status-ready { background: #9c27b0; color: white; }
+        .status-served { background: #4caf50; color: white; }
+        .status-cancelled { background: #f44336; color: white; }
+        .status-confirmed { background: #4caf50; color: white; }
+
+        .btn-sm {
+            background: #6f4e37;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: #f9f5f0;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: #6f4e37;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 20px;
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .sidebar {
+                left: 0;
+            }
+            .menu-toggle {
+                display: none;
+            }
+            .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 0.7rem;
+                padding: 8px 5px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 15px;
+            }
+            .emp-info-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Employee Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item active" data-panel="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+        <div class="menu-item" data-panel="orders"><i class="fas fa-shopping-cart"></i> Orders</div>
+        <div class="menu-item" data-panel="bookings"><i class="fas fa-calendar-alt"></i> Table Bookings</div>
+        <div class="menu-item" data-panel="profile"><i class="fas fa-user"></i> My Profile</div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <!-- Employee Info Bar -->
+    <div class="emp-info-bar" id="empInfoBar"></div>
+
+    <!-- Stats Container -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Dashboard Panel -->
+        <div id="panel-dashboard" class="content-panel active">
+            <div id="quickStats"></div>
+        </div>
+
+        <!-- Orders Panel -->
+        <div id="panel-orders" class="content-panel">
+            <h3>📦 Orders Management</h3>
+            <div class="table-responsive">
+                <table id="ordersTable">
+                    <thead>
+                        <tr><th>Order ID</th><th>Customer</th><th>Table</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bookings Panel -->
+        <div id="panel-bookings" class="content-panel">
+            <h3>📅 Table Bookings</h3>
+            <div class="table-responsive">
+                <table id="bookingsTable">
+                    <thead>
+                        <tr><th>Booking ID</th><th>Table</th><th>Customer</th><th>Date</th><th>Slots</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Profile Panel -->
+        <div id="panel-profile" class="content-panel">
+            <h3>👤 My Profile</h3>
+            <div id="profileContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check employee login
+    if(localStorage.getItem("employeeLoggedIn") !== "true") {
+        window.location.href = "admin-login.html";
+    }
+
+    // Get current employee data
+    const employeeId = localStorage.getItem("employeeId");
+    let currentEmployee = null;
+    let allEmployees = JSON.parse(localStorage.getItem("employees")) || [];
+    currentEmployee = allEmployees.find(emp => emp.id === employeeId) || { id: "emp001", name: "John Doe", role: "waiter", mobile: "9876543210", email: "john@cupcoffee.com" };
+
+    // Sidebar Functions
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    if(menuToggle) menuToggle.onclick = openSidebar;
+
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 992) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // Menu Navigation
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.onclick = function() {
+            const panel = this.dataset.panel;
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel-${panel}`).classList.add('active');
+            document.getElementById('pageTitle').innerText = this.innerText.trim();
+            loadPanelData(panel);
+            if(window.innerWidth < 992) closeSidebar();
+        };
+    });
+
+    function loadPanelData(panel) {
+        if(panel === 'dashboard') loadStats();
+        else if(panel === 'orders') loadOrders();
+        else if(panel === 'bookings') loadBookings();
+        else if(panel === 'profile') loadProfile();
+    }
+
+    // Load Employee Info
+    function loadEmployeeInfo() {
+        const roleMap = { waiter: "Waiter / Server", cashier: "Cashier", manager: "Manager", admin: "Admin" };
+        const roleName = roleMap[currentEmployee.role] || currentEmployee.role;
+        document.getElementById("empInfoBar").innerHTML = `
+            <div class="emp-details">
+                <div class="emp-avatar"><i class="fas fa-user"></i></div>
+                <div>
+                    <div class="emp-name">${currentEmployee.name}</div>
+                    <div class="emp-role">${roleName} | ID: ${currentEmployee.id}</div>
+                </div>
+            </div>
+            <div><i class="fas fa-phone"></i> ${currentEmployee.mobile}</div>
+            <div><i class="fas fa-envelope"></i> ${currentEmployee.email || 'Not provided'}</div>
+        `;
+    }
+
+    function loadStats() {
+        const orders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        const pendingOrders = orders.filter(o => o.status === "Pending").length;
+        const preparingOrders = orders.filter(o => o.status === "Preparing").length;
+        const readyOrders = orders.filter(o => o.status === "Ready").length;
+        const servedOrders = orders.filter(o => o.status === "Served").length;
+        const todayOrders = orders.filter(o => new Date(o.orderTime).toDateString() === new Date().toDateString()).length;
+
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${orders.length}</h3><p>📦 Total Orders</p></div>
+            <div class="stat-card"><h3>${pendingOrders}</h3><p>⏳ Pending</p></div>
+            <div class="stat-card"><h3>${preparingOrders}</h3><p>👨‍🍳 Preparing</p></div>
+            <div class="stat-card"><h3>${readyOrders}</h3><p>✅ Ready</p></div>
+            <div class="stat-card"><h3>${servedOrders}</h3><p>🍽️ Served</p></div>
+            <div class="stat-card"><h3>${todayOrders}</h3><p>📆 Today's Orders</p></div>
+        `;
+
+        const recentOrders = orders.slice(-5).reverse();
+        document.getElementById("quickStats").innerHTML = `
+            <h4>Recent Orders</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        ${recentOrders.map(o => `
+                            <tr>
+                                <td>${o.orderId}</td>
+                                <td>${o.customer?.name || 'Guest'}</td>
+                                <td>₹${o.totalAmount}</td>
+                                <td><span class="status-badge status-${(o.status||'pending').toLowerCase()}">${o.status||'Pending'}</span></td>
+                                <td><button class="btn-sm" onclick="document.querySelector('[data-panel=orders]').click(); loadOrders();">View</button></td>
+                            </tr>
+                        `).join('')}
+                        ${recentOrders.length === 0 ? '<tr><td colspan="5" style="text-align:center;">No orders found</td></tr>' : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function loadOrders() {
+        const orders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        const tbody = document.getElementById("ordersList");
+        tbody.innerHTML = "";
+        orders.forEach((order, idx) => {
+            const status = order.status || "Pending";
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${order.orderId}</td>
+                <td>${order.customer?.name || 'Guest'}<br><small>${order.customer?.mobile || ''}</small></td>
+                <td>${order.customer?.tableNo || 'Takeaway'}</td>
+                <td>${order.items?.map(i => `${i.name}×${i.qty}`).join(", ") || '-'}</td>
+                <td>₹${order.totalAmount}</td>
+                <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
+                <td>
+                    <select onchange="updateOrderStatus(${idx}, this.value)">
+                        <option ${status==='Pending'?'selected':''}>Pending</option>
+                        <option ${status==='Preparing'?'selected':''}>Preparing</option>
+                        <option ${status==='Ready'?'selected':''}>Ready</option>
+                        <option ${status==='Served'?'selected':''}>Served</option>
+                    </select>
+                 </td>
+            `;
+        });
+        if(orders.length === 0) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No orders found</td></tr>';
+    }
+
+    function updateOrderStatus(index, newStatus) {
+        let orders = JSON.parse(localStorage.getItem("allOrders")) || [];
+        orders[index].status = newStatus;
+        localStorage.setItem("allOrders", JSON.stringify(orders));
+        loadOrders();
+        loadStats();
+    }
+
+    function loadBookings() {
+        const bookings = JSON.parse(localStorage.getItem("tableBookings")) || [];
+        const today = new Date().toISOString().slice(0,10);
+        const todayBookings = bookings.filter(b => b.date === today && b.status === "Confirmed");
+        const tbody = document.getElementById("bookingsList");
+        tbody.innerHTML = "";
+        todayBookings.forEach(booking => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${booking.bookingId}</td>
+                <td>${booking.tableNumber}</td>
+                <td>${booking.customerName}<br><small>${booking.customerMobile}</small></td>
+                <td>${booking.date}</td>
+                <td>${booking.slots?.join(", ")}</td>
+                <td><span class="status-badge status-confirmed">Confirmed</span></td>
+            `;
+        });
+        if(todayBookings.length === 0) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No bookings for today</td></tr>';
+    }
+
+    function loadProfile() {
+        const roleMap = { waiter: "Waiter / Server", cashier: "Cashier", manager: "Manager", admin: "Admin" };
+        const roleName = roleMap[currentEmployee.role] || currentEmployee.role;
+        document.getElementById("profileContent").innerHTML = `
+            <div class="profile-card">
+                <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                <h3>${currentEmployee.name}</h3>
+                <p style="color:#6f4e37; margin-bottom:15px;">${roleName}</p>
+                <hr style="margin:15px 0;">
+                <div style="text-align: left;">
+                    <p><strong><i class="fas fa-id-card"></i> Employee ID:</strong> ${currentEmployee.id}</p>
+                    <p><strong><i class="fas fa-phone"></i> Mobile:</strong> ${currentEmployee.mobile}</p>
+                    <p><strong><i class="fas fa-envelope"></i> Email:</strong> ${currentEmployee.email || 'Not provided'}</p>
+                    <p><strong><i class="fas fa-calendar"></i> Joined:</strong> ${new Date().toLocaleDateString()}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function logout() {
+        localStorage.removeItem("employeeLoggedIn");
+        localStorage.removeItem("employeeId");
+        window.location.href = "admin-login.html";
+    }
+
+    // Initial load
+    loadEmployeeInfo();
+    loadStats();
+    loadOrders();
+</script>
+</body>
+</html>

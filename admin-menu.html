@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Menu Management - CUP Coffee Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h3 { font-size: 1.5rem; }
+        .sidebar-header span { color: #d4a373; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .menu-item.active { background: #6f4e37; color: white; border-left-color: #d4a373; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #6f4e37; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: #2c1810; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card h3 { font-size: 1.5rem; color: #6f4e37; }
+        .stat-card p { color: #666; font-size: 0.8rem; }
+
+        /* Container */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #6f4e37; color: white; }
+        .btn-success { background: #4caf50; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+
+        /* Category Bar */
+        .category-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .category-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .category-btn.active { background: #6f4e37; color: white; }
+        .subcategory-btn {
+            background: #e8e0d8;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .subcategory-btn.active { background: #d4a373; color: #2c1810; }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .item-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        .item-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .item-card img { width: 100%; height: 180px; object-fit: cover; cursor: pointer; background: #f5f5f5; }
+        .item-info { padding: 12px; }
+        .item-name { font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .item-price { color: #6f4e37; font-weight: bold; font-size: 1.1rem; }
+        .special-star { color: #ff9800; cursor: pointer; font-size: 1.1rem; }
+        .item-actions { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
+        .editable { cursor: pointer; padding: 2px 5px; border-radius: 5px; transition: 0.3s; }
+        .editable:hover { background: #f0f0f0; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            padding: 25px;
+            animation: fadeIn 0.3s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.85rem; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Inter', sans-serif; }
+        .image-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; margin-top: 10px; }
+        .drag-area { border: 2px dashed #ddd; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .drag-area.drag-over { border-color: #6f4e37; background: #f9f5f0; }
+        .image-size-info { font-size: 0.7rem; color: #999; margin-top: 5px; text-align: center; }
+        .no-items { grid-column: 1 / -1; text-align: center; padding: 40px; color: #999; }
+
+        @media (min-width: 992px) { .sidebar { left: 0; } .menu-toggle { display: none; } .main-content { margin-left: 280px; } }
+        @media (max-width: 768px) { .items-grid { grid-template-columns: 1fr; } .category-bar { overflow-x: auto; flex-wrap: nowrap; } .quick-actions { flex-direction: column; } .btn { justify-content: center; } }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-orders.html" class="menu-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Table Bookings</a>
+        <a href="admin-tables.html" class="menu-item"><i class="fas fa-chair"></i> Tables</a>
+        <a href="admin-menu.html" class="menu-item active"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-users"></i> Employees</a>
+        <a href="admin-kitchen.html" class="menu-item"><i class="fas fa-egg"></i> Kitchen Staff</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-user-friends"></i> Customers</a>
+        <a href="admin-stock.html" class="menu-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-content-settings.html" class="menu-item"><i class="fas fa-paint-brush"></i> Content</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-utensils"></i> Menu Management</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <div class="container">
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="btn btn-primary" onclick="openItemModal()"><i class="fas fa-plus"></i> Add Item</button>
+            <button class="btn btn-success" onclick="saveAllData()"><i class="fas fa-save"></i> Save All</button>
+            <button class="btn btn-warning" onclick="resetToDefault()"><i class="fas fa-undo"></i> Reset Default</button>
+            <button class="btn" onclick="openCategoryModal()" style="background:#2196f3; color:white;"><i class="fas fa-folder-plus"></i> Add Category</button>
+            <button class="btn" onclick="openSubcategoryModal()" style="background:#9c27b0; color:white;"><i class="fas fa-tag"></i> Add Subcategory</button>
+        </div>
+
+        <!-- Category Bar -->
+        <div class="category-bar" id="categoryBar"></div>
+        <div class="category-bar" id="subcategoryBar"></div>
+
+        <!-- Search -->
+        <div class="category-bar" style="justify-content: space-between;">
+            <input type="text" id="searchInput" placeholder="🔍 Search food items..." style="flex:1; padding:10px; border:1px solid #ddd; border-radius:30px;">
+            <button class="btn-primary" style="padding:10px 20px;" onclick="searchItems()">Search</button>
+        </div>
+
+        <!-- Items Grid -->
+        <div id="itemsGrid" class="items-grid"></div>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Category</h3>
+            <button class="close-modal" onclick="closeCategoryModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Category Name</label>
+            <input type="text" id="categoryName" placeholder="e.g., Breakfast, Lunch, Dinner">
+        </div>
+        <button class="btn btn-primary" onclick="saveCategory()" style="width:100%;">Add Category</button>
+    </div>
+</div>
+
+<!-- Subcategory Modal -->
+<div id="subcategoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Subcategory</h3>
+            <button class="close-modal" onclick="closeSubcategoryModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Select Category</label>
+            <select id="subcategoryParent" class="form-control"></select>
+        </div>
+        <div class="form-group">
+            <label>Subcategory Name</label>
+            <input type="text" id="subcategoryName" placeholder="e.g., Chicken, Paneer, Veg">
+        </div>
+        <button class="btn btn-primary" onclick="saveSubcategory()" style="width:100%;">Add Subcategory</button>
+    </div>
+</div>
+
+<!-- Item Modal -->
+<div id="itemModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add New Item</h3>
+            <button class="close-modal" onclick="closeItemModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="itemName" placeholder="e.g., Chicken Biryani">
+        </div>
+        <div class="form-group">
+            <label>Price (₹)</label>
+            <input type="number" id="itemPrice" placeholder="e.g., 220">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="itemCategory" onchange="updateSubcategorySelect()"></select>
+        </div>
+        <div class="form-group">
+            <label>Subcategory</label>
+            <select id="itemSubcategory"></select>
+        </div>
+        <div class="form-group">
+            <label>Item Image URL (Optional)</label>
+            <input type="text" id="itemImageUrl" placeholder="https://example.com/food.jpg">
+            <div class="image-size-info">Paste image URL from internet or leave empty for default image</div>
+            <img id="imagePreview" class="image-preview" style="display:none;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveItem()">Save Item</button>
+            <button class="btn btn-danger" onclick="closeItemModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    if(localStorage.getItem("adminLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    if(menuToggle) menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    // Default Menu Data (with URL images only, no Base64)
+    let menuData = {
+        Breakfast: { Chicken: [], Egg: [], Veg: [] },
+        Snacks: { Chicken: [], Paneer: [], Veg: [] },
+        Lunch: { Chicken: [], Mutton: [], Fish: [], Paneer: [], Veg: [] },
+        Dinner: { Chicken: [], Mutton: [], Fish: [], Paneer: [] },
+        Beverages: { "Tea/Coffee": [], Shakes: [], "Soft Drinks": [] },
+        Desserts: { "Ice Cream": [], Cakes: [], Traditional: [] }
+    };
+
+    let specialItems = [];
+    let currentCategory = "Breakfast";
+    let currentSubcategory = "Chicken";
+    let editingItemId = null;
+    let currentImageUrl = "";
+
+    // Default image placeholder
+    const DEFAULT_IMAGE = "https://via.placeholder.com/300x200?text=Food+Image";
+
+    // Load Data
+    function loadData() {
+        try {
+            const saved = localStorage.getItem("fullMenuData");
+            if(saved && saved !== "undefined" && saved !== "null") {
+                const parsed = JSON.parse(saved);
+                if(parsed && Object.keys(parsed).length > 0) menuData = parsed;
+                else initDefaultItems();
+            } else { initDefaultItems(); }
+            
+            const savedSpecial = localStorage.getItem("specialMenuItems");
+            if(savedSpecial && savedSpecial !== "undefined") {
+                try { specialItems = JSON.parse(savedSpecial); } catch(e) { specialItems = []; }
+            }
+        } catch(e) {
+            console.log("Error loading data, using default");
+            initDefaultItems();
+        }
+        
+        renderStats();
+        renderCategories();
+        renderSubcategories();
+        renderItems();
+        updateCategorySelects();
+    }
+
+    function initDefaultItems() {
+        menuData = {
+            Breakfast: { Chicken: [], Egg: [], Veg: [] },
+            Snacks: { Chicken: [], Paneer: [], Veg: [] },
+            Lunch: { Chicken: [], Mutton: [], Fish: [], Paneer: [], Veg: [] },
+            Dinner: { Chicken: [], Mutton: [], Fish: [], Paneer: [] },
+            Beverages: { "Tea/Coffee": [], Shakes: [], "Soft Drinks": [] },
+            Desserts: { "Ice Cream": [], Cakes: [], Traditional: [] }
+        };
+        menuData.Breakfast.Chicken = [
+            { id: 1, name: "Chicken Sausage with Egg", price: 220, img: "https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg?w=300&h=200&fit=crop" },
+            { id: 2, name: "Chicken Omelette", price: 150, img: "https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg?w=300&h=200&fit=crop" }
+        ];
+        menuData.Lunch.Chicken = [
+            { id: 10, name: "Chicken Biryani", price: 220, img: "https://images.pexels.com/photos/718742/pexels-photo-718742.jpeg?w=300&h=200&fit=crop" },
+            { id: 11, name: "Butter Chicken", price: 260, img: "https://images.pexels.com/photos/2338407/pexels-photo-2338407.jpeg?w=300&h=200&fit=crop" }
+        ];
+        menuData.Beverages["Tea/Coffee"] = [
+            { id: 20, name: "Masala Chai", price: 30, img: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?w=300&h=200&fit=crop" },
+            { id: 21, name: "Cappuccino", price: 120, img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=200&fit=crop" }
+        ];
+        menuData.Snacks.Chicken = [
+            { id: 30, name: "Chicken Popcorn", price: 120, img: "https://images.pexels.com/photos/27414590/pexels-photo-27414590.jpeg?w=300&h=200&fit=crop" }
+        ];
+        saveDataSilent();
+    }
+
+    function renderStats() {
+        let totalItems = 0;
+        let categoryWise = {};
+        
+        for(let cat in menuData) {
+            let catCount = 0;
+            for(let sub in menuData[cat]) {
+                catCount += menuData[cat][sub].length;
+            }
+            totalItems += catCount;
+            categoryWise[cat] = catCount;
+        }
+        
+        const specialCount = specialItems.length;
+        
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>${totalItems}</h3><p>📦 Total Items</p></div>
+            <div class="stat-card"><h3>${specialCount}</h3><p>⭐ Special Items</p></div>
+            <div class="stat-card"><h3>${Object.keys(menuData).length}</h3><p>📁 Categories</p></div>
+            <div class="stat-card"><h3>${categoryWise[currentCategory] || 0}</h3><p>🍽️ Items in ${currentCategory}</p></div>
+        `;
+    }
+
+    function saveDataSilent() {
+        try {
+            localStorage.setItem("fullMenuData", JSON.stringify(menuData));
+            localStorage.setItem("specialMenuItems", JSON.stringify(specialItems));
+        } catch(e) {
+            console.warn("Storage quota issue, cleaning up...");
+            showToast("Storage almost full! Consider removing unused items.");
+        }
+    }
+
+    function saveData() {
+        try {
+            localStorage.setItem("fullMenuData", JSON.stringify(menuData));
+            localStorage.setItem("specialMenuItems", JSON.stringify(specialItems));
+            renderStats();
+            showToast("Data saved!");
+        } catch(e) {
+            alert("Storage is full! Please delete some items or clear browser data.");
+        }
+    }
+
+    function saveAllData() { saveData(); }
+
+    function resetToDefault() {
+        if(confirm("Reset to default menu? All custom items will be lost!")){
+            initDefaultItems();
+            specialItems = [];
+            saveData();
+            loadData();
+        }
+    }
+
+    function renderCategories() {
+        const container = document.getElementById("categoryBar");
+        container.innerHTML = Object.keys(menuData).map(cat => 
+            `<button class="category-btn ${currentCategory === cat ? 'active' : ''}" onclick="selectCategory('${cat}')">${cat}</button>`
+        ).join('');
+    }
+
+    function selectCategory(cat) {
+        currentCategory = cat;
+        currentSubcategory = Object.keys(menuData[cat])[0];
+        renderCategories();
+        renderSubcategories();
+        renderItems();
+        renderStats();
+    }
+
+    function renderSubcategories() {
+        const container = document.getElementById("subcategoryBar");
+        if(!menuData[currentCategory]) return;
+        container.innerHTML = Object.keys(menuData[currentCategory]).map(sub => 
+            `<button class="subcategory-btn ${currentSubcategory === sub ? 'active' : ''}" onclick="selectSubcategory('${sub}')">${sub}</button>`
+        ).join('');
+        container.innerHTML += `<button class="subcategory-btn" onclick="openSubcategoryModal()" style="background:#6f4e37; color:white;"><i class="fas fa-plus"></i> New</button>`;
+    }
+
+    function selectSubcategory(sub) {
+        currentSubcategory = sub;
+        renderSubcategories();
+        renderItems();
+    }
+
+    function renderItems() {
+        const container = document.getElementById("itemsGrid");
+        const items = menuData[currentCategory]?.[currentSubcategory] || [];
+        const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
+        let filtered = searchTerm ? items.filter(i => i.name.toLowerCase().includes(searchTerm)) : items;
+        
+        if(filtered.length === 0){
+            container.innerHTML = `<div class="no-items"><i class="fas fa-utensils" style="font-size:3rem;"></i><p>No items found. Click "Add Item" to create one.</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = filtered.map(item => `
+            <div class="item-card">
+                <img src="${item.img || DEFAULT_IMAGE}" alt="${item.name}" onerror="this.src='${DEFAULT_IMAGE}'" onclick="changeImageUrl(${item.id})">
+                <div class="item-info">
+                    <div class="item-name">
+                        <span class="editable" onclick="editItemName(${item.id}, '${escapeHtml(item.name)}')">${escapeHtml(item.name)}</span>
+                        <span class="special-star" onclick="toggleSpecial(${item.id})">${specialItems.some(s => s.id === item.id) ? '⭐' : '☆'}</span>
+                    </div>
+                    <div class="item-price">
+                        <span class="editable" onclick="editItemPrice(${item.id}, ${item.price})">₹${item.price}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(text) {
+        if(!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function searchItems() { renderItems(); }
+    document.getElementById("searchInput")?.addEventListener('keyup', () => renderItems());
+
+    function editItemName(id, oldName) {
+        const newName = prompt("Enter new name:", oldName);
+        if(newName && newName !== oldName){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const idx = menuData[cat][sub].findIndex(i => i.id === id);
+                    if(idx !== -1){
+                        menuData[cat][sub][idx].name = newName;
+                        saveData();
+                        renderItems();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    function editItemPrice(id, oldPrice) {
+        const newPrice = prompt("Enter new price:", oldPrice);
+        if(newPrice && !isNaN(newPrice)){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const idx = menuData[cat][sub].findIndex(i => i.id === id);
+                    if(idx !== -1){
+                        menuData[cat][sub][idx].price = parseInt(newPrice);
+                        saveData();
+                        renderItems();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    function deleteItem(id) {
+        if(confirm("Delete this item?")){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    menuData[cat][sub] = menuData[cat][sub].filter(i => i.id !== id);
+                }
+            }
+            specialItems = specialItems.filter(s => s.id !== id);
+            saveData();
+            renderItems();
+            renderStats();
+        }
+    }
+
+    function toggleSpecial(id) {
+        const exists = specialItems.some(s => s.id === id);
+        if(exists){
+            specialItems = specialItems.filter(s => s.id !== id);
+        } else {
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const item = menuData[cat][sub].find(i => i.id === id);
+                    if(item){
+                        specialItems.push({ ...item, category: cat, subcategory: sub });
+                        break;
+                    }
+                }
+            }
+        }
+        saveData();
+        renderItems();
+        renderStats();
+    }
+
+    function changeImageUrl(id) {
+        const newUrl = prompt("Enter image URL (from internet):", "");
+        if(newUrl && newUrl.trim()){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const idx = menuData[cat][sub].findIndex(i => i.id === id);
+                    if(idx !== -1){
+                        menuData[cat][sub][idx].img = newUrl.trim();
+                        saveData();
+                        renderItems();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    function openCategoryModal() {
+        document.getElementById("categoryName").value = "";
+        document.getElementById("categoryModal").classList.add("active");
+    }
+
+    function closeCategoryModal() { document.getElementById("categoryModal").classList.remove("active"); }
+
+    function saveCategory() {
+        const name = document.getElementById("categoryName").value.trim();
+        if(!name) { alert("Enter category name"); return; }
+        if(menuData[name]) { alert("Category already exists!"); return; }
+        menuData[name] = {};
+        saveData();
+        loadData();
+        closeCategoryModal();
+    }
+
+    function openSubcategoryModal() {
+        updateCategorySelects();
+        document.getElementById("subcategoryName").value = "";
+        document.getElementById("subcategoryModal").classList.add("active");
+    }
+
+    function closeSubcategoryModal() { document.getElementById("subcategoryModal").classList.remove("active"); }
+
+    function saveSubcategory() {
+        const parent = document.getElementById("subcategoryParent").value;
+        const name = document.getElementById("subcategoryName").value.trim();
+        if(!parent || !name) { alert("Select category and enter subcategory name"); return; }
+        if(menuData[parent][name]) { alert("Subcategory already exists!"); return; }
+        menuData[parent][name] = [];
+        saveData();
+        loadData();
+        closeSubcategoryModal();
+    }
+
+    function updateCategorySelects() {
+        const catSelect = document.getElementById("subcategoryParent");
+        if(catSelect) catSelect.innerHTML = Object.keys(menuData).map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function openItemModal(editId = null) {
+        editingItemId = editId;
+        document.getElementById("modalTitle").innerText = editId ? "Edit Item" : "Add New Item";
+        document.getElementById("itemName").value = "";
+        document.getElementById("itemPrice").value = "";
+        document.getElementById("itemImageUrl").value = "";
+        const catSelect = document.getElementById("itemCategory");
+        catSelect.innerHTML = Object.keys(menuData).map(c => `<option value="${c}">${c}</option>`).join('');
+        catSelect.value = currentCategory;
+        updateSubcategorySelect();
+        document.getElementById("itemSubcategory").value = currentSubcategory;
+        document.getElementById("imagePreview").style.display = "none";
+        currentImageUrl = "";
+        
+        if(editId){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const item = menuData[cat][sub].find(i => i.id === editId);
+                    if(item){
+                        document.getElementById("itemName").value = item.name;
+                        document.getElementById("itemPrice").value = item.price;
+                        document.getElementById("itemImageUrl").value = item.img || "";
+                        document.getElementById("itemCategory").value = cat;
+                        updateSubcategorySelect();
+                        setTimeout(() => document.getElementById("itemSubcategory").value = sub, 50);
+                        if(item.img){
+                            document.getElementById("imagePreview").src = item.img;
+                            document.getElementById("imagePreview").style.display = "block";
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        document.getElementById("itemModal").classList.add("active");
+    }
+
+    function updateSubcategorySelect() {
+        const cat = document.getElementById("itemCategory").value;
+        const subSelect = document.getElementById("itemSubcategory");
+        if(cat && menuData[cat]) subSelect.innerHTML = Object.keys(menuData[cat]).map(s => `<option value="${s}">${s}</option>`).join('');
+        else subSelect.innerHTML = '<option value="">Select</option>';
+    }
+
+    function previewImageFromUrl() {
+        const url = document.getElementById("itemImageUrl").value;
+        if(url){
+            document.getElementById("imagePreview").src = url;
+            document.getElementById("imagePreview").style.display = "block";
+            currentImageUrl = url;
+        } else {
+            document.getElementById("imagePreview").style.display = "none";
+            currentImageUrl = "";
+        }
+    }
+
+    document.getElementById("itemImageUrl")?.addEventListener('input', previewImageFromUrl);
+
+    function saveItem() {
+        const name = document.getElementById("itemName").value.trim();
+        const price = parseInt(document.getElementById("itemPrice").value);
+        const category = document.getElementById("itemCategory").value;
+        const subcategory = document.getElementById("itemSubcategory").value;
+        const imgUrl = document.getElementById("itemImageUrl").value.trim();
+        
+        if(!name || !price || !category || !subcategory){
+            alert("Please fill all fields");
+            return;
+        }
+        
+        const img = imgUrl || DEFAULT_IMAGE;
+        
+        if(editingItemId){
+            for(let cat in menuData){
+                for(let sub in menuData[cat]){
+                    const idx = menuData[cat][sub].findIndex(i => i.id === editingItemId);
+                    if(idx !== -1){
+                        menuData[cat][sub][idx] = { ...menuData[cat][sub][idx], name, price, img };
+                        break;
+                    }
+                }
+            }
+        } else {
+            const newId = Date.now();
+            if(!menuData[category]) menuData[category] = {};
+            if(!menuData[category][subcategory]) menuData[category][subcategory] = [];
+            menuData[category][subcategory].push({ id: newId, name, price, img });
+        }
+        
+        saveData();
+        closeItemModal();
+        renderItems();
+        renderStats();
+    }
+
+    function closeItemModal() {
+        document.getElementById("itemModal").classList.remove("active");
+        editingItemId = null;
+        currentImageUrl = null;
+    }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.innerText = msg;
+        toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#4caf50; color:white; padding:10px 20px; border-radius:30px; z-index:2000;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    function logout() {
+        localStorage.removeItem("adminLoggedIn");
+        window.location.href = "admin-login.html";
+    }
+
+    loadData();
+</script>
+</body>
+</html>

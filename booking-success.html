@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #4caf50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 20px;
+        }
+
+        h2 {
+            color: #2c1810;
+            margin-bottom: 10px;
+        }
+
+        .booking-details {
+            background: #f9f5f0;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0d6cf;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .home-btn, .track-btn {
+            display: inline-block;
+            background: #6f4e37;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+
+        .track-btn {
+            background: #ff9800;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-container">
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+    <h2>Booking Confirmed! 🎉</h2>
+    <p>Your table has been successfully booked</p>
+    
+    <div class="booking-details" id="bookingDetails"></div>
+    
+    <div class="button-group">
+        <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Back to Home</a>
+        <a href="my-bookings.html" class="track-btn"><i class="fas fa-calendar-check"></i> My Bookings</a>
+    </div>
+</div>
+
+<script>
+    const lastBooking = JSON.parse(localStorage.getItem("lastBooking"));
+    
+    if (lastBooking) {
+        document.getElementById("bookingDetails").innerHTML = `
+            <div class="detail-row"><strong>Booking ID:</strong> <span>${lastBooking.bookingId}</span></div>
+            <div class="detail-row"><strong>Table:</strong> <span>${lastBooking.tableNumber}</span></div>
+            <div class="detail-row"><strong>Date:</strong> <span>${lastBooking.date}</span></div>
+            <div class="detail-row"><strong>Time Slots:</strong> <span>${lastBooking.slots.join(", ")}</span></div>
+            <div class="detail-row"><strong>Duration:</strong> <span>${lastBooking.totalMinutes} minutes</span></div>
+            <div class="detail-row"><strong>Name:</strong> <span>${lastBooking.customerName}</span></div>
+            <div class="detail-row"><strong>Mobile:</strong> <span>${lastBooking.customerMobile}</span></div>
+            <div class="detail-row"><strong>Advance Paid:</strong> <span>₹${lastBooking.advancePaid}</span></div>
+        `;
+    } else {
+        document.getElementById("bookingDetails").innerHTML = `<p>Booking confirmed! Please check your details.</p>`;
+    }
+</script>
+</body>
+</html>

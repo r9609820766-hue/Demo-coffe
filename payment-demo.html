@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .payment-header {
+            margin-bottom: 30px;
+        }
+
+        .payment-header h2 {
+            color: #2c1810;
+            margin-bottom: 10px;
+        }
+
+        .payment-amount {
+            font-size: 2.5rem;
+            color: #6f4e37;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .payment-options {
+            margin: 30px 0;
+        }
+
+        .payment-btn {
+            background: #6f4e37;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .payment-btn:hover {
+            background: #5a3e2e;
+            transform: translateY(-2px);
+        }
+
+        .success-btn {
+            background: #4caf50;
+        }
+
+        .success-btn:hover {
+            background: #45a049;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #999;
+            text-decoration: none;
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6f4e37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h2><i class="fas fa-credit-card"></i> Complete Payment</h2>
+        <p>Pay advance to confirm your booking</p>
+    </div>
+    
+    <div class="payment-amount" id="amountDisplay">₹200</div>
+    
+    <div class="payment-options">
+        <button class="payment-btn" onclick="processPayment('UPI')">
+            <i class="fas fa-mobile-alt"></i> Pay with UPI
+        </button>
+        <button class="payment-btn" onclick="processPayment('Card')">
+            <i class="fas fa-credit-card"></i> Pay with Card
+        </button>
+        <button class="payment-btn" onclick="processPayment('NetBanking')">
+            <i class="fas fa-university"></i> Net Banking
+        </button>
+        <button class="payment-btn success-btn" onclick="processPayment('Demo')">
+            <i class="fas fa-check-circle"></i> Demo Payment (Instant Success)
+        </button>
+    </div>
+    
+    <div class="loader" id="loader"></div>
+    
+    <a href="table-booking.html" class="back-link">← Cancel & Go Back</a>
+</div>
+
+<script>
+    // Get amount from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let amount = urlParams.get('amount');
+    if (!amount) amount = 200;
+    document.getElementById("amountDisplay").innerHTML = `₹${amount}`;
+    
+    function processPayment(method) {
+        const loader = document.getElementById("loader");
+        loader.style.display = "block";
+        
+        // Simulate payment processing
+        setTimeout(() => {
+            loader.style.display = "none";
+            
+            const pendingBooking = JSON.parse(localStorage.getItem("pendingBooking"));
+            
+            if (pendingBooking) {
+                pendingBooking.status = "Confirmed";
+                pendingBooking.paymentMethod = method;
+                pendingBooking.paymentTime = new Date().toISOString();
+                pendingBooking.paidAmount = parseInt(amount);
+                
+                // Save booking to localStorage
+                let allBookings = JSON.parse(localStorage.getItem("tableBookings")) || [];
+                allBookings.push(pendingBooking);
+                localStorage.setItem("tableBookings", JSON.stringify(allBookings));
+                
+                // Save last booking for success page
+                localStorage.setItem("lastBooking", JSON.stringify(pendingBooking));
+                
+                // Clear pending booking
+                localStorage.removeItem("pendingBooking");
+                
+                // Redirect to success page
+                window.location.href = "booking-success.html";
+            } else {
+                alert("No pending booking found");
+                window.location.href = "table-booking.html";
+            }
+        }, 1500);
+    }
+</script>
+</body>
+</html>

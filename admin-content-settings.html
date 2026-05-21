@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Content Settings - CUP Coffee Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0f0a 0%, #2c1810 100%);
+            color: white;
+            transition: 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h3 { font-size: 1.5rem; }
+        .sidebar-header span { color: #d4a373; }
+        .sidebar-header p { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.8);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .menu-item.active { background: #6f4e37; color: white; border-left-color: #d4a373; }
+        .menu-item i { width: 24px; font-size: 1.1rem; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .main-content { min-height: 100vh; transition: 0.3s; }
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .menu-toggle { background: #6f4e37; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.2rem; }
+        .page-title { font-size: 1.2rem; font-weight: 600; color: #2c1810; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 25px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Container */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+        }
+        .tab-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .tab-btn.active { background: #6f4e37; color: white; }
+
+        /* Settings Panels */
+        .settings-panel {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .settings-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .panel-header h3 { color: #2c1810; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .btn-primary { background: #6f4e37; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: #5a3e2e; }
+        .btn-sm { background: #6f4e37; color: white; border: none; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.7rem; }
+        .btn-danger { background: #f44336; }
+        .btn-warning { background: #ff9800; }
+
+        .features-list { margin-top: 20px; }
+        .feature-item {
+            background: #f9f5f0;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .feature-item input { flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 8px; min-width: 150px; }
+
+        .special-items-list { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .special-item {
+            background: #f9f5f0;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .special-item input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; min-width: 100px; }
+
+        @media (min-width: 992px) {
+            .sidebar { left: 0; }
+            .menu-toggle { display: none; }
+            .main-content { margin-left: 280px; }
+        }
+        @media (max-width: 768px) {
+            .tabs { justify-content: center; }
+            .feature-item, .special-item { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>CUP <span>Coffee</span></h3>
+        <p>Admin Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <a href="admin-dashboard.html" class="menu-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="admin-orders.html" class="menu-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="admin-bookings.html" class="menu-item"><i class="fas fa-calendar-alt"></i> Table Bookings</a>
+        <a href="admin-tables.html" class="menu-item"><i class="fas fa-chair"></i> Tables</a>
+        <a href="admin-menu.html" class="menu-item"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="admin-employees.html" class="menu-item"><i class="fas fa-users"></i> Employees</a>
+        <a href="admin-kitchen.html" class="menu-item"><i class="fas fa-egg"></i> Kitchen Staff</a>
+        <a href="admin-customers.html" class="menu-item"><i class="fas fa-user-friends"></i> Customers</a>
+        <a href="admin-stock.html" class="menu-item"><i class="fas fa-boxes"></i> Stock</a>
+        <a href="admin-reports.html" class="menu-item"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="admin-content-settings.html" class="menu-item active"><i class="fas fa-paint-brush"></i> Content</a>
+        <a href="admin-settings.html" class="menu-item"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="page-title"><i class="fas fa-paint-brush"></i> Content Settings</div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="hero">🏠 Hero Section</button>
+            <button class="tab-btn" data-tab="features">⭐ Features Section</button>
+            <button class="tab-btn" data-tab="special">🍽️ Special Menu</button>
+            <button class="tab-btn" data-tab="cta">📢 CTA Section</button>
+            <button class="tab-btn" data-tab="footer">📞 Footer</button>
+        </div>
+
+        <!-- Hero Section Panel -->
+        <div id="panel-hero" class="settings-panel active">
+            <div class="panel-header">
+                <h3><i class="fas fa-home"></i> Hero Section Settings</h3>
+                <button class="btn-primary" onclick="saveHero()"><i class="fas fa-save"></i> Save Hero</button>
+            </div>
+            <div class="form-group"><label>Main Title</label><input type="text" id="heroTitle" placeholder="Welcome to CUP ☕"></div>
+            <div class="form-group"><label>Subtitle</label><input type="text" id="heroSubtitle" placeholder="Experience the finest coffee..."></div>
+            <div class="form-group"><label>Scan QR Button Text</label><input type="text" id="scanBtnText" placeholder="Scan QR & Order"></div>
+            <div class="form-group"><label>Table Booking Button Text</label><input type="text" id="bookBtnText" placeholder="Table Booking"></div>
+        </div>
+
+        <!-- Features Section Panel -->
+        <div id="panel-features" class="settings-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-star"></i> Features Section Settings</h3>
+                <button class="btn-primary" onclick="saveFeatures()"><i class="fas fa-save"></i> Save Features</button>
+            </div>
+            <div class="form-group"><label>Section Title</label><input type="text" id="featuresTitle" placeholder="Why Choose CUP?"></div>
+            <div id="featuresList"></div>
+            <button class="btn-primary btn-sm" onclick="addFeature()"><i class="fas fa-plus"></i> Add Feature</button>
+        </div>
+
+        <!-- Special Menu Panel -->
+        <div id="panel-special" class="settings-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-utensils"></i> Today's Special Menu</h3>
+                <button class="btn-primary" onclick="saveSpecialMenu()"><i class="fas fa-save"></i> Save Special Menu</button>
+            </div>
+            <div class="form-group"><label>Section Title</label><input type="text" id="specialTitle" placeholder="Today's Special"></div>
+            <div id="specialItemsList" class="special-items-list"></div>
+            <button class="btn-primary btn-sm" onclick="addSpecialItem()"><i class="fas fa-plus"></i> Add Special Item</button>
+        </div>
+
+        <!-- CTA Section Panel -->
+        <div id="panel-cta" class="settings-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-bullhorn"></i> CTA Section Settings</h3>
+                <button class="btn-primary" onclick="saveCTA()"><i class="fas fa-save"></i> Save CTA</button>
+            </div>
+            <div class="form-group"><label>CTA Title</label><input type="text" id="ctaTitle" placeholder="Ready to Order?"></div>
+            <div class="form-group"><label>CTA Text</label><input type="text" id="ctaText" placeholder="Scan QR code or book a table"></div>
+        </div>
+
+        <!-- Footer Panel -->
+        <div id="panel-footer" class="settings-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-file-alt"></i> Footer Settings</h3>
+                <button class="btn-primary" onclick="saveFooter()"><i class="fas fa-save"></i> Save Footer</button>
+            </div>
+            <div class="form-group"><label>Copyright Text</label><input type="text" id="footerText" placeholder="© 2026 CUP Coffee"></div>
+            <div class="form-group"><label>Contact Info</label><input type="text" id="footerContact" placeholder="📍 Address | 📞 Phone"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    if(localStorage.getItem("adminLoggedIn") !== "true") window.location.href = "admin-login.html";
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+    if(menuToggle) menuToggle.onclick = openSidebar;
+    window.addEventListener('resize', () => { if(window.innerWidth >= 992) closeSidebar(); });
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel-${this.dataset.tab}`).classList.add('active');
+        };
+    });
+
+    // Default data
+    const defaultFeatures = [
+        { icon: "fas fa-qrcode", title: "QR Code Order", desc: "Scan table QR code & order directly from your phone" },
+        { icon: "fas fa-clock", title: "Fast Service", desc: "Quick preparation and doorstep service at your table" },
+        { icon: "fas fa-coffee", title: "Premium Coffee", desc: "Freshly brewed coffee from the finest beans" },
+        { icon: "fas fa-calendar-check", title: "Easy Booking", desc: "Book your table online with advance payment" }
+    ];
+
+    const defaultSpecialMenu = [
+        { name: "Cappuccino", price: 120, img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=200&fit=crop" },
+        { name: "Chicken Sandwich", price: 180, img: "https://images.pexels.com/photos/1600727/pexels-photo-1600727.jpeg?w=300&h=200&fit=crop" },
+        { name: "Paneer Tikka", price: 190, img: "https://images.pexels.com/photos/9562293/pexels-photo-9562293.jpeg?w=300&h=200&fit=crop" },
+        { name: "Cold Coffee", price: 140, img: "https://images.pexels.com/photos/2255800/pexels-photo-2255800.jpeg?w=300&h=200&fit=crop" }
+    ];
+
+    // Load all settings
+    function loadHero() {
+        let hero = localStorage.getItem("heroSettings");
+        if(hero) hero = JSON.parse(hero);
+        document.getElementById("heroTitle").value = hero?.title || "Welcome to CUP ☕";
+        document.getElementById("heroSubtitle").value = hero?.subtitle || "Experience the finest coffee & delicious food in a cozy atmosphere";
+        document.getElementById("scanBtnText").value = hero?.scanBtn || "Scan QR & Order";
+        document.getElementById("bookBtnText").value = hero?.bookBtn || "Table Booking";
+    }
+
+    function saveHero() {
+        const heroSettings = {
+            title: document.getElementById("heroTitle").value,
+            subtitle: document.getElementById("heroSubtitle").value,
+            scanBtn: document.getElementById("scanBtnText").value,
+            bookBtn: document.getElementById("bookBtnText").value
+        };
+        localStorage.setItem("heroSettings", JSON.stringify(heroSettings));
+        alert("Hero section saved!");
+    }
+
+    function loadFeatures() {
+        let title = localStorage.getItem("featuresTitle");
+        let features = localStorage.getItem("featuresSettings");
+        document.getElementById("featuresTitle").value = title || "Why Choose CUP?";
+        if(features) features = JSON.parse(features);
+        else features = defaultFeatures;
+        renderFeaturesList(features);
+    }
+
+    function renderFeaturesList(features) {
+        const container = document.getElementById("featuresList");
+        container.innerHTML = "";
+        features.forEach((f, i) => {
+            const div = document.createElement("div");
+            div.className = "feature-item";
+            div.innerHTML = `
+                <input type="text" placeholder="Icon Class" value="${f.icon}" style="flex:1;" id="featureIcon_${i}">
+                <input type="text" placeholder="Title" value="${f.title}" style="flex:2;" id="featureTitle_${i}">
+                <input type="text" placeholder="Description" value="${f.desc}" style="flex:3;" id="featureDesc_${i}">
+                <button class="btn-sm btn-danger" onclick="removeFeature(${i})"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addFeature() {
+        let features = localStorage.getItem("featuresSettings");
+        if(features) features = JSON.parse(features);
+        else features = [...defaultFeatures];
+        features.push({ icon: "fas fa-star", title: "New Feature", desc: "Description here" });
+        renderFeaturesList(features);
+    }
+
+    function removeFeature(index) {
+        let features = localStorage.getItem("featuresSettings");
+        if(features) features = JSON.parse(features);
+        else features = [...defaultFeatures];
+        features.splice(index, 1);
+        renderFeaturesList(features);
+    }
+
+    function saveFeatures() {
+        const title = document.getElementById("featuresTitle").value;
+        localStorage.setItem("featuresTitle", title);
+        const count = document.querySelectorAll("#featuresList .feature-item").length;
+        let features = [];
+        for(let i=0; i<count; i++) {
+            let icon = document.getElementById(`featureIcon_${i}`).value;
+            let title = document.getElementById(`featureTitle_${i}`).value;
+            let desc = document.getElementById(`featureDesc_${i}`).value;
+            if(title) features.push({ icon, title, desc });
+        }
+        localStorage.setItem("featuresSettings", JSON.stringify(features));
+        alert("Features section saved!");
+    }
+
+    function loadSpecialMenu() {
+        let title = localStorage.getItem("specialMenuTitle");
+        let items = localStorage.getItem("specialMenuItems");
+        document.getElementById("specialTitle").value = title || "Today's Special";
+        if(items) items = JSON.parse(items);
+        else items = defaultSpecialMenu;
+        renderSpecialItems(items);
+    }
+
+    function renderSpecialItems(items) {
+        const container = document.getElementById("specialItemsList");
+        container.innerHTML = "";
+        items.forEach((item, i) => {
+            const div = document.createElement("div");
+            div.className = "special-item";
+            div.innerHTML = `
+                <input type="text" placeholder="Item Name" value="${item.name}" style="flex:2;" id="specialName_${i}">
+                <input type="number" placeholder="Price" value="${item.price}" style="flex:1;" id="specialPrice_${i}">
+                <input type="text" placeholder="Image URL" value="${item.img}" style="flex:3;" id="specialImg_${i}">
+                <button class="btn-sm btn-danger" onclick="removeSpecialItem(${i})"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addSpecialItem() {
+        let items = localStorage.getItem("specialMenuItems");
+        if(items) items = JSON.parse(items);
+        else items = [...defaultSpecialMenu];
+        items.push({ name: "New Item", price: 99, img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?w=300&h=200&fit=crop" });
+        renderSpecialItems(items);
+    }
+
+    function removeSpecialItem(index) {
+        let items = localStorage.getItem("specialMenuItems");
+        if(items) items = JSON.parse(items);
+        else items = [...defaultSpecialMenu];
+        items.splice(index, 1);
+        renderSpecialItems(items);
+    }
+
+    function saveSpecialMenu() {
+        const title = document.getElementById("specialTitle").value;
+        localStorage.setItem("specialMenuTitle", title);
+        const count = document.querySelectorAll("#specialItemsList .special-item").length;
+        let items = [];
+        for(let i=0; i<count; i++) {
+            let name = document.getElementById(`specialName_${i}`).value;
+            let price = parseInt(document.getElementById(`specialPrice_${i}`).value);
+            let img = document.getElementById(`specialImg_${i}`).value;
+            if(name) items.push({ name, price, img });
+        }
+        localStorage.setItem("specialMenuItems", JSON.stringify(items));
+        alert("Special menu saved!");
+    }
+
+    function loadCTA() {
+        let cta = localStorage.getItem("ctaSettings");
+        if(cta) cta = JSON.parse(cta);
+        document.getElementById("ctaTitle").value = cta?.title || "Ready to Order?";
+        document.getElementById("ctaText").value = cta?.text || "Scan the QR code on your table or book a table online";
+    }
+
+    function saveCTA() {
+        const ctaSettings = {
+            title: document.getElementById("ctaTitle").value,
+            text: document.getElementById("ctaText").value
+        };
+        localStorage.setItem("ctaSettings", JSON.stringify(ctaSettings));
+        alert("CTA section saved!");
+    }
+
+    function loadFooter() {
+        let footer = localStorage.getItem("footerSettings");
+        if(footer) footer = JSON.parse(footer);
+        document.getElementById("footerText").value = footer?.text || "© 2026 CUP Coffee - Premium Coffee Shop. All rights reserved.";
+        document.getElementById("footerContact").value = footer?.contact || "📍 123 Coffee Street, Food City | 📞 +91 98765 43210";
+    }
+
+    function saveFooter() {
+        const footerSettings = {
+            text: document.getElementById("footerText").value,
+            contact: document.getElementById("footerContact").value
+        };
+        localStorage.setItem("footerSettings", JSON.stringify(footerSettings));
+        alert("Footer saved!");
+    }
+
+    function logout() { localStorage.removeItem("adminLoggedIn"); window.location.href = "admin-login.html"; }
+
+    loadHero();
+    loadFeatures();
+    loadSpecialMenu();
+    loadCTA();
+    loadFooter();
+</script>
+</body>
+</html>

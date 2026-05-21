@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Success - CUP Coffee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #4caf50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 20px;
+        }
+
+        h2 {
+            color: #2c1810;
+            margin-bottom: 10px;
+        }
+
+        .order-id {
+            background: #f9f5f0;
+            padding: 12px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .info-text {
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .home-btn {
+            display: inline-block;
+            background: #6f4e37;
+            color: white;
+            padding: 14px 35px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 20px 5px;
+        }
+
+        .track-btn {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 14px 35px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 20px 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-container">
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+    <h2>Order Placed Successfully! 🎉</h2>
+    <p>Thank you for ordering from CUP Coffee</p>
+    
+    <div class="order-id" id="orderIdDisplay"></div>
+    
+    <div class="info-text">
+        <i class="fas fa-clock"></i> Your order is being prepared.<br>
+        You will be notified when it's ready.
+    </div>
+    
+    <div class="button-group">
+        <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Back to Home</a>
+        <a href="track-order.html" class="track-btn"><i class="fas fa-map-marker-alt"></i> Track Order</a>
+    </div>
+</div>
+
+<script>
+    const lastOrder = JSON.parse(localStorage.getItem("lastOrder"));
+    if (lastOrder) {
+        document.getElementById("orderIdDisplay").innerHTML = `<strong>Order ID:</strong> ${lastOrder.orderId}`;
+    } else {
+        document.getElementById("orderIdDisplay").innerHTML = `<strong>Order Confirmed!</strong>`;
+    }
+</script>
+</body>
+</html>
